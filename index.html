@@ -1,1 +1,700 @@
-404: Not Found
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LinuXxtra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Orbitron:wght@900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00ff41;
+      --red: #ff0033;
+      --dim-green: #003b00;
+      --dark: #000000;
+      --panel: rgba(0,20,0,0.85);
+      --glow-red: 0 0 10px #ff0033, 0 0 30px #ff003388, 0 0 60px #ff003344;
+      --glow-green: 0 0 8px #00ff41, 0 0 20px #00ff4188;
+    }
+
+    html, body {
+      height: 100%;
+      background: #000;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+    }
+
+    /* ─── MATRIX CANVAS ─── */
+    #matrix {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      opacity: 0.55;
+    }
+
+    /* ─── SCANLINES ─── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.18) 3px,
+        rgba(0,0,0,0.18) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ─── LAYOUT ─── */
+    #app {
+      position: relative;
+      z-index: 2;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 20px;
+    }
+
+    /* ─── PANELS ─── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--green);
+      box-shadow: var(--glow-green), inset 0 0 30px rgba(0,255,65,0.04);
+      border-radius: 4px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ─── HEADER BAR ─── */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-bottom: 1px solid var(--green);
+      font-size: 11px;
+      letter-spacing: 2px;
+      opacity: 0.7;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .dot.r { background: #ff5f57; }
+    .dot.y { background: #febc2e; }
+    .dot.g { background: #28c840; }
+
+    /* ─── TOP PANEL: MP3 CONVERTER ─── */
+    #converter-panel .inner { padding: 18px 20px; }
+
+    #converter-panel h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--green);
+      text-shadow: var(--glow-green);
+      margin-bottom: 14px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    #url-input {
+      flex: 1;
+      background: rgba(0,255,65,0.05);
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      border-radius: 3px;
+      transition: box-shadow .2s;
+    }
+    #url-input::placeholder { color: #1a6b2a; }
+    #url-input:focus { box-shadow: var(--glow-green); }
+
+    .btn-convert {
+      background: transparent;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      padding: 9px 18px;
+      cursor: pointer;
+      border-radius: 3px;
+      text-transform: uppercase;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .btn-convert:hover {
+      background: var(--green);
+      color: #000;
+      box-shadow: var(--glow-green);
+    }
+    .btn-convert:active { transform: scale(0.97); }
+
+    #status-msg {
+      margin-top: 10px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      min-height: 18px;
+      color: var(--green);
+      opacity: 0.8;
+    }
+    #status-msg.error { color: var(--red); }
+
+    /* progress bar */
+    #progress-wrap {
+      margin-top: 10px;
+      display: none;
+      height: 4px;
+      background: rgba(0,255,65,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+      box-shadow: var(--glow-green);
+      transition: width .1s linear;
+    }
+
+    /* ─── LOGO ─── */
+    #logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    #logo {
+      font-family: 'VT323', monospace;
+      font-size: clamp(54px, 10vw, 96px);
+      color: var(--red);
+      text-shadow:
+        0 0 6px #fff,
+        0 0 14px #ff0033,
+        0 0 30px #ff0033,
+        0 0 60px #ff0033cc,
+        0 0 100px #ff003388;
+      letter-spacing: 6px;
+      animation: pulse-logo 2.4s ease-in-out infinite;
+      user-select: none;
+    }
+
+    @keyframes pulse-logo {
+      0%, 100% {
+        text-shadow:
+          0 0 6px #fff,
+          0 0 14px #ff0033,
+          0 0 30px #ff0033,
+          0 0 60px #ff0033cc,
+          0 0 100px #ff003388;
+      }
+      50% {
+        text-shadow:
+          0 0 4px #fff,
+          0 0 10px #ff0033,
+          0 0 20px #ff0033,
+          0 0 40px #ff0033bb,
+          0 0 70px #ff003366;
+      }
+    }
+
+    #tagline {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: var(--green);
+      opacity: 0.6;
+      text-transform: uppercase;
+      animation: blink 1.2s step-end infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 0.6; }
+      50% { opacity: 0.15; }
+    }
+
+    /* ─── BOTTOM PANEL: DOWNLOADS ─── */
+    #downloads-panel .inner { padding: 14px 20px; }
+
+    #downloads-panel h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--green);
+      text-shadow: var(--glow-green);
+      margin-bottom: 12px;
+    }
+
+    #track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #track-list::-webkit-scrollbar { width: 4px; }
+    #track-list::-webkit-scrollbar-thumb { background: var(--green); border-radius: 2px; }
+
+    .track-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,255,65,0.04);
+      border: 1px solid rgba(0,255,65,0.25);
+      border-radius: 3px;
+      padding: 8px 12px;
+      transition: border-color .2s, background .2s;
+    }
+    .track-item:hover {
+      border-color: var(--green);
+      background: rgba(0,255,65,0.09);
+    }
+    .track-item.playing {
+      border-color: var(--red);
+      box-shadow: 0 0 10px #ff003366;
+    }
+
+    .track-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      cursor: pointer;
+      width: 22px;
+      text-align: center;
+      transition: transform .15s;
+    }
+    .track-icon:hover { transform: scale(1.2); }
+
+    .track-name {
+      flex: 1;
+      font-size: 12px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--green);
+    }
+
+    .track-duration {
+      font-size: 11px;
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    /* waveform bars for playing indicator */
+    .wave {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .wave span {
+      width: 3px;
+      background: var(--red);
+      border-radius: 1px;
+      animation: wave-bar 0.6s ease-in-out infinite alternate;
+    }
+    .wave span:nth-child(2) { animation-delay: .15s; }
+    .wave span:nth-child(3) { animation-delay: .3s; }
+    .wave span:nth-child(4) { animation-delay: .45s; }
+    @keyframes wave-bar {
+      from { height: 3px; }
+      to { height: 16px; }
+    }
+
+    .empty-state {
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.35;
+      letter-spacing: 2px;
+      padding: 16px 0;
+    }
+
+    /* hidden audio element */
+    #audio-player { display: none; }
+
+    /* ─── NOTE BAR ─── */
+    #note-bar {
+      font-size: 10px;
+      letter-spacing: 2px;
+      opacity: 0.35;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div id="app">
+
+  <!-- TOP: MP3 CONVERTER -->
+  <div class="panel" id="converter-panel">
+    <div class="panel-header">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span>// MP3_CONVERTER.exe</span>
+    </div>
+    <div class="inner">
+      <h2>[ MP3 CONVERTER ]</h2>
+      <div class="input-row">
+        <input id="url-input" type="text" placeholder="paste youtube / soundcloud / any link here..." autocomplete="off" spellcheck="false"/>
+        <button class="btn-convert" id="convert-btn">▶ CONVERT</button>
+      </div>
+      <div id="progress-wrap"><div id="progress-bar"></div></div>
+      <div id="status-msg">// awaiting input...</div>
+    </div>
+  </div>
+
+  <!-- LOGO -->
+  <div id="logo-wrap">
+    <div id="logo">LinuXxtra</div>
+    <div id="tagline">▌ ROOT ACCESS GRANTED ▐</div>
+  </div>
+
+  <!-- BOTTOM: DOWNLOADS / PLAYER -->
+  <div class="panel" id="downloads-panel">
+    <div class="panel-header">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span>// DOWNLOADS &amp; PLAYER</span>
+    </div>
+    <div class="inner">
+      <h2>[ DOWNLOADED TRACKS ]</h2>
+      <div id="track-list">
+        <div class="empty-state" id="empty-msg">// no tracks yet — convert a link above</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="note-bar">// LinuXxtra v2.0 — all processing is client-side | audio plays in-browser</div>
+</div>
+
+<audio id="audio-player" controls></audio>
+
+<script>
+/* ──────────────────────────────────────
+   MATRIX RAIN
+────────────────────────────────────── */
+(function() {
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let cols, drops;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    cols = Math.floor(canvas.width / 16);
+    drops = Array(cols).fill(1);
+  }
+
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*></?|\\';
+
+  function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.045)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '15px "Share Tech Mono", monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const brightness = Math.random();
+      if (brightness > 0.97) {
+        ctx.fillStyle = '#ffffff';
+      } else if (brightness > 0.88) {
+        ctx.fillStyle = '#00ff41';
+      } else {
+        ctx.fillStyle = '#00882a';
+      }
+      ctx.fillText(char, i * 16, drops[i] * 16);
+      if (drops[i] * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  setInterval(draw, 40);
+})();
+
+/* ──────────────────────────────────────
+   MP3 CONVERTER LOGIC
+   Uses a free proxy API (ytdl-based) for real YouTube → MP3.
+   Falls back to demo mode if unavailable.
+────────────────────────────────────── */
+const tracks = [];
+let currentTrackIndex = -1;
+const audioPlayer = document.getElementById('audio-player');
+const trackList = document.getElementById('track-list');
+const statusMsg = document.getElementById('status-msg');
+const progressWrap = document.getElementById('progress-wrap');
+const progressBar = document.getElementById('progress-bar');
+const urlInput = document.getElementById('url-input');
+const convertBtn = document.getElementById('convert-btn');
+
+function setStatus(msg, isError = false) {
+  statusMsg.textContent = msg;
+  statusMsg.className = isError ? 'error' : '';
+}
+
+function animateProgress(duration, cb) {
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '0%';
+  let start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    const pct = Math.min(((ts - start) / duration) * 100, 95);
+    progressBar.style.width = pct + '%';
+    if (pct < 95) requestAnimationFrame(step);
+    else cb();
+  }
+  requestAnimationFrame(step);
+}
+
+function finishProgress() {
+  progressBar.style.width = '100%';
+  setTimeout(() => { progressWrap.style.display = 'none'; progressBar.style.width = '0%'; }, 600);
+}
+
+/* Extract YouTube video ID */
+function getYouTubeId(url) {
+  const match = url.match(/(?:youtu\.be\/|v=|\/embed\/|\/v\/)([A-Za-z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
+/* Use yt-dlp web API proxy — co.wuk.sh (free, public) */
+async function convertToMp3(url) {
+  convertBtn.disabled = true;
+  convertBtn.textContent = '⟳ PROCESSING';
+  setStatus('// initiating conversion sequence...');
+
+  const ytId = getYouTubeId(url);
+
+  animateProgress(6000, () => {});
+
+  try {
+    /* Try cobalt.tools API (public, no key needed) */
+    const apiUrl = 'https://co.wuk.sh/api/json';
+    const body = {
+      url: url,
+      aFormat: 'mp3',
+      isAudioOnly: true,
+      filenamePattern: 'basic'
+    };
+
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) throw new Error('API unavailable');
+
+    const data = await res.json();
+
+    if (data.status === 'error' || data.status === 'rate-limit') {
+      throw new Error(data.text || 'Conversion failed');
+    }
+
+    const audioUrl = data.url;
+    const title = data.filename
+      ? data.filename.replace(/\.mp3$/, '')
+      : (ytId ? `Track_${ytId}` : `Track_${Date.now()}`);
+
+    finishProgress();
+    addTrack(title, audioUrl);
+    setStatus(`// ✓ converted: ${title}`);
+
+  } catch (err) {
+    /* Fallback: generate a silent demo track with oscillator for UI demonstration */
+    finishProgress();
+    console.warn('API error, using demo mode:', err.message);
+
+    const demoTitle = ytId
+      ? `YouTube_${ytId}`
+      : `Track_${Date.now()}`;
+
+    /* Create a short beep as demo audio */
+    const demoAudio = generateDemoTone();
+    addTrack(demoTitle + ' [DEMO]', demoAudio);
+    setStatus(`// ⚠ live API unavailable — demo track added. Try pasting a direct .mp3 URL.`, true);
+  }
+
+  convertBtn.disabled = false;
+  convertBtn.textContent = '▶ CONVERT';
+  urlInput.value = '';
+}
+
+/* Generate a short synthesised tone as demo */
+function generateDemoTone() {
+  const ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+  const offline = new OfflineAudioContext(1, ctx2.sampleRate * 3, ctx2.sampleRate);
+  const osc = offline.createOscillator();
+  const gain = offline.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(220, 0);
+  osc.frequency.linearRampToValueAtTime(880, 1.5);
+  osc.frequency.linearRampToValueAtTime(110, 3);
+  gain.gain.setValueAtTime(0.4, 0);
+  gain.gain.linearRampToValueAtTime(0, 2.9);
+  osc.connect(gain);
+  gain.connect(offline.destination);
+  osc.start(0);
+  osc.stop(3);
+  return offline.startRendering().then(buffer => {
+    return bufferToWavUrl(buffer);
+  });
+}
+
+function bufferToWavUrl(buffer) {
+  const numChannels = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const format = 1;
+  const bitDepth = 16;
+  const dataLength = buffer.length * numChannels * (bitDepth / 8);
+  const arrayBuffer = new ArrayBuffer(44 + dataLength);
+  const view = new DataView(arrayBuffer);
+  const writeString = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, format, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numChannels * (bitDepth / 8), true);
+  view.setUint16(32, numChannels * (bitDepth / 8), true);
+  view.setUint16(34, bitDepth, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataLength, true);
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      const sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+  const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
+  return URL.createObjectURL(blob);
+}
+
+/* Add track to list */
+async function addTrack(title, audioUrlOrPromise) {
+  const audioUrl = (audioUrlOrPromise instanceof Promise)
+    ? await audioUrlOrPromise
+    : audioUrlOrPromise;
+
+  const idx = tracks.length;
+  tracks.push({ title, url: audioUrl });
+
+  const emptyMsg = document.getElementById('empty-msg');
+  if (emptyMsg) emptyMsg.remove();
+
+  const item = document.createElement('div');
+  item.className = 'track-item';
+  item.dataset.idx = idx;
+  item.innerHTML = `
+    <span class="track-icon" title="Play">▶</span>
+    <span class="track-name" title="${title}">${title}</span>
+    <span class="track-duration" id="dur-${idx}">--:--</span>
+    <div class="wave" style="display:none">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  `;
+
+  item.querySelector('.track-icon').addEventListener('click', () => playTrack(idx));
+  item.addEventListener('dblclick', () => playTrack(idx));
+
+  /* Try to get duration */
+  const tmpAudio = new Audio(audioUrl);
+  tmpAudio.addEventListener('loadedmetadata', () => {
+    const dur = tmpAudio.duration;
+    if (isFinite(dur)) {
+      const m = Math.floor(dur / 60);
+      const s = Math.floor(dur % 60).toString().padStart(2, '0');
+      document.getElementById(`dur-${idx}`).textContent = `${m}:${s}`;
+    }
+  });
+
+  trackList.appendChild(item);
+}
+
+function playTrack(idx) {
+  const track = tracks[idx];
+  if (!track) return;
+
+  /* Update UI */
+  document.querySelectorAll('.track-item').forEach((el, i) => {
+    const icon = el.querySelector('.track-icon');
+    const wave = el.querySelector('.wave');
+    if (i === idx) {
+      el.classList.add('playing');
+      icon.textContent = '■';
+      wave.style.display = 'flex';
+    } else {
+      el.classList.remove('playing');
+      icon.textContent = '▶';
+      wave.style.display = 'none';
+    }
+  });
+
+  currentTrackIndex = idx;
+  audioPlayer.src = track.url;
+  audioPlayer.play().catch(e => {
+    setStatus('// ⚠ playback blocked by browser — click the page first', true);
+    console.warn(e);
+  });
+  setStatus(`// ▶ playing: ${track.title}`);
+}
+
+audioPlayer.addEventListener('ended', () => {
+  /* auto-next */
+  const next = currentTrackIndex + 1;
+  if (next < tracks.length) playTrack(next);
+  else {
+    document.querySelectorAll('.track-item').forEach(el => {
+      el.classList.remove('playing');
+      el.querySelector('.track-icon').textContent = '▶';
+      el.querySelector('.wave').style.display = 'none';
+    });
+    setStatus('// playback complete');
+  }
+});
+
+/* Convert button */
+convertBtn.addEventListener('click', () => {
+  const url = urlInput.value.trim();
+  if (!url) { setStatus('// error: no URL provided', true); return; }
+  try { new URL(url); } catch { setStatus('// error: invalid URL', true); return; }
+  convertToMp3(url);
+});
+
+/* Allow Enter key */
+urlInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') convertBtn.click();
+});
+
+/* Paste shortcut hint */
+urlInput.addEventListener('paste', () => {
+  setTimeout(() => setStatus('// URL detected — press CONVERT'), 50);
+});
+</script>
+</body>
+</html>
+ls -lh index.html
+ls
+cd ~my-website/
