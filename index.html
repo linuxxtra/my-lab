@@ -317,6 +317,15 @@
             document.getElementById('home-bottom-text').innerText = data.homeBottom;
         }
     </script>
+    <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
+</body>
+</html>
+
 </body>
 </html>
 
