@@ -1,289 +1,320 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FWgermanTECH | FWgermanPUMPS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;800&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <title>FWGERMAN | Engineering Excellence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
+            --bg-primary: #ffffff;
             --bg-glass: rgba(255, 255, 255, 0.7);
-            --text-color: #1a1a1a;
+            --text-main: #1a1a1a;
             --accent: #004e92;
-            --blur: 15px;
-            --transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            --btn-bg: #333333;
+            --btn-text: #ffffff;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         [data-theme="dark"] {
-            --bg-glass: rgba(15, 15, 15, 0.8);
-            --text-color: #f0f0f0;
+            --bg-primary: #0a0a0a;
+            --bg-glass: rgba(20, 20, 20, 0.8);
+            --text-main: #e0e0e0;
             --accent: #00d2ff;
+            --btn-bg: #2a2a2a; /* Greyed out as requested */
+            --btn-text: #00d2ff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-
-        body {
-            background: #ffffff;
-            color: var(--text-color);
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: all 0.4s ease; }
+        body { 
+            background: var(--bg-primary); 
+            color: var(--text-main); 
+            font-family: 'Poppins', sans-serif;
             overflow-x: hidden;
-            transition: background 0.5s ease;
         }
 
-        body.dark-mode { background: #0a0a0a; }
-
-        /* THE SHINY GLASS BACKGROUND */
-        .glass-overlay {
+        /* Industrial Wallpaper Pattern */
+        .wallpaper {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--bg-glass), transparent);
-            backdrop-filter: blur(var(--blur));
-            z-index: -1;
+            background-image: radial-gradient(var(--accent) 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+            opacity: 0.1;
+            z-index: -2;
         }
 
-        /* TOP NAVIGATION TABS */
-        .top-nav {
+        /* NAVIGATION */
+        nav {
             position: fixed;
-            top: 20px; right: 30px;
-            display: flex; gap: 15px;
+            top: 0; width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             z-index: 1000;
-        }
-
-        .tab-btn {
-            background: var(--bg-glass);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-color);
             backdrop-filter: blur(10px);
-            transition: var(--transition);
-        }
-
-        .lang-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .lang-list {
-            position: absolute;
-            top: 100%; right: 0;
             background: var(--bg-glass);
-            display: none;
-            flex-direction: column;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .lang-dropdown:hover .lang-list { display: flex; }
-
-        .contact-trigger {
-            position: fixed;
-            top: 20px; left: 30px;
-            z-index: 1000;
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-item { cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; }
+        
+        .lang-select {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
-        /* MAIN HOME PAGE */
-        .page {
+        /* PAGES */
+        .page-section {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            padding: 100px 10%;
             text-align: center;
-            padding: 50px;
             position: absolute;
             width: 100%;
-            top: 0; left: 0;
-            transition: var(--transition);
+            top: 0;
         }
 
-        .hidden { opacity: 0; filter: blur(50px); pointer-events: none; transform: scale(1.1); }
+        .hidden { opacity: 0; filter: blur(40px); transform: scale(0.9); pointer-events: none; }
 
-        h1 {
-            font-family: 'Syncopate', sans-serif;
-            font-size: 4rem;
-            margin-bottom: 20px;
-            background: linear-gradient(to right, var(--text-color), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; margin-bottom: 20px; line-height: 1.2; }
+        .highlight { color: var(--accent); }
 
-        .tagline { font-size: 1.2rem; max-width: 700px; line-height: 1.6; margin-bottom: 40px; }
-
-        /* BUTTON MORPHING */
-        .btn-container { display: flex; gap: 30px; }
-
-        .morph-btn {
-            padding: 20px 40px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            border: none;
-            background: var(--text-color);
-            color: white;
-            border-radius: 50px;
+        /* BUTTONS */
+        .cta-container { display: flex; gap: 20px; margin-top: 40px; }
+        .main-btn {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            padding: 18px 35px;
+            border: 2px solid var(--accent);
+            border-radius: 2px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
             cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
         }
 
-        .morph-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            filter: brightness(1.2);
+        .main-btn:hover { background: var(--accent); color: white; transform: translateY(-5px); }
+
+        /* CONTENT CARDS */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+            width: 100%;
         }
 
-        /* ABOUT US SHOOTING ANIMATION */
-        .about-box {
-            margin-top: 50px;
-            padding: 30px;
-            border-radius: 15px;
+        .info-card {
             background: var(--bg-glass);
-            max-width: 800px;
-            position: relative;
-            overflow: hidden;
+            padding: 30px;
+            border-left: 5px solid var(--accent);
+            text-align: left;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* ABOUT ANIMATION */
+        .about-trigger {
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px dashed var(--accent);
             cursor: pointer;
+            overflow: hidden;
+            position: relative;
         }
 
-        .about-content {
-            height: 0; opacity: 0;
-            transition: all 1s ease-in-out;
+        .about-text {
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 1s ease, opacity 1s ease;
         }
 
-        .about-box.active .about-content {
-            height: auto; opacity: 1;
+        .about-trigger.active .about-text {
+            max-height: 500px;
+            opacity: 1;
             padding-top: 20px;
         }
 
-        /* FOOTER & CONTACTS */
+        /* FOOTER */
         footer {
-            margin-top: auto;
-            padding: 60px 20px;
-            width: 100%;
-            background: rgba(0,0,0,0.05);
-        }
-
-        .contact-grid {
+            background: #111;
+            color: white;
+            padding: 80px 10%;
             display: flex;
-            justify-content: center;
-            gap: 100px;
-            margin-bottom: 30px;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 100vh; /* Pushes it down for scroll */
         }
 
-        .copyright {
-            position: absolute;
-            bottom: 20px; left: 30px;
-            font-size: 0.8rem; opacity: 0.6;
+        .contact-box {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            border-bottom: 1px solid #333;
+            padding-bottom: 40px;
+            margin-bottom: 20px;
         }
 
-        /* ANIMATION DELAYS */
-        .fade-up { animation: fadeUp 1.5s forwards; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        [dir="rtl"] { text-align: right; }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-    <div class="glass-overlay"></div>
+    <div class="wallpaper"></div>
 
-    <div class="contact-trigger" onclick="document.getElementById('contacts').scrollIntoView({behavior: 'smooth'})">Contacts</div>
-    
-    <div class="top-nav">
-        <button class="tab-btn" onclick="toggleTheme()">DARK/LIGHT</button>
-        <div class="lang-dropdown">
-            <button class="tab-btn">ENGLISH (🇺🇲)</button>
-            <div class="lang-list">
-                <button class="tab-btn" onclick="alert('Arabic Selected')">ARABIC</button>
-                <button class="tab-btn">GERMAN</button>
-                <button class="tab-btn">URDU</button>
-                </div>
+    <nav>
+        <div class="nav-item" onclick="scrollToContact()">CONTACTS</div>
+        <div class="nav-links">
+            <select class="lang-select" onchange="changeLang(this.value)">
+                <option value="en">English (🇺🇸)</option>
+                <option value="ar">Arabic (🇦🇪)</option>
+            </select>
+            <button class="lang-select" onclick="toggleTheme()">🌓 MODE</button>
         </div>
-    </div>
+    </nav>
 
-    <section id="home-page" class="page">
-        <h1 class="fade-up">FWgermanTECH <br> & FWgermanPUMPS</h1>
-        <p class="tagline">Authentic German pumps, motors, and components brought to the UAE and Pakistan with full warranty support.</p>
+    <section id="home" class="page-section">
+        <h1 id="main-title">FWgermanTECH & <br><span class="highlight">FWgermanPUMPS</span></h1>
+        <p id="main-tagline" style="max-width: 800px; font-size: 1.1rem; opacity: 0.8;">
+            Authentic German pumps, motors, and components brought to the UAE and Pakistan with full warranty support.
+        </p>
         
-        <div class="btn-container">
-            <button class="morph-btn" onclick="switchPage('tech-page')">FWgermanTECH</button>
-            <button class="morph-btn" onclick="switchPage('pump-page')">FWgermanPUMPS</button>
+        <div class="cta-container">
+            <button class="main-btn" onclick="showPage('tech')">FWgermanTECH</button>
+            <button class="main-btn" onclick="showPage('pumps')">FWgermanPUMPS</button>
         </div>
 
-        <p style="margin-top: 100px; width: 75%; opacity: 0.8;">
-            We deliver fast, dependable support to keep your pumping systems running at peak performance. 
-            Our warranty includes full coverage across the UAE and Pakistan.
+        <p id="home-bottom-text" style="margin-top: 80px; width: 75%; font-style: italic;">
+            "We deliver fast, dependable support to keep your pumping systems running at peak performance."
         </p>
     </section>
 
-    <section id="tech-page" class="page hidden">
-        <h1>FWgermanTECH</h1>
-        <h2 class="fade-up">Genuine German components sourced carefully BY FWGERMANTECH</h2>
-        <p class="tagline fade-up" style="animation-delay: 0.5s;">At FW Germantech, we combine German engineering with local requirements. We source components directly from Germany to ensure high-quality, reliable products.</p>
+    <section id="tech" class="page-section hidden">
+        <h1>FWgerman<span class="highlight">TECH</span></h1>
+        <p id="tech-intro">Genuine German components sourced carefully by FWGERMANTECH.</p>
         
-        <div class="about-box" onclick="this.classList.toggle('active')">
-            <strong>About Us (Click to Expand)</strong>
-            <div class="about-content">
-                Bringing high quality German Pump parts to UAE and Pakistan with reliable assembly and warranty. 
-                If you are an international client, please do not hesitate to contact us.
+        <div class="info-grid">
+            <div class="info-card">
+                <h3 class="highlight">01. Sourcing</h3>
+                <p>Direct partnerships with top-tier German manufacturers for raw components.</p>
+            </div>
+            <div class="info-card">
+                <h3 class="highlight">02. Quality</h3>
+                <p>Every part undergoes rigorous metallurgical testing to ensure 100% reliability.</p>
+            </div>
+            <div class="info-card">
+                <h3 class="highlight">03. Logistics</h3>
+                <p>Optimized supply chain delivering high-tech parts to UAE and Pakistan markets.</p>
             </div>
         </div>
-        <button class="tab-btn" style="margin-top: 20px;" onclick="switchPage('home-page')">← BACK</button>
-    </section>
 
-    <section id="pump-page" class="page hidden">
-        <h1>FWgermanPUMPS</h1>
-        <h2 class="fade-up">Expert assembly ensuring reliable performance by FWGERMAN PUMPS</h2>
-        <p class="tagline fade-up" style="animation-delay: 0.5s;">We combine German engineering with highly skilled assembly. This ensures you receive dependable local support whenever you need it.</p>
-        
-        <div class="about-box" onclick="this.classList.toggle('active')">
-            <strong>About Us (Click to Expand)</strong>
-            <div class="about-content">
-                Bringing excellent quality German pump parts to UAE and Pakistan with reliable assembly and warranty.
+        <div class="about-trigger" onclick="this.classList.toggle('active')">
+            <strong>[ ABOUT US - CLICK TO REVEAL ]</strong>
+            <div class="about-text" id="tech-about">
+                Bringing high quality German Pump parts to UAE and Pakistan with reliable assembly and warranty.
             </div>
         </div>
-        <button class="tab-btn" style="margin-top: 20px;" onclick="switchPage('home-page')">← BACK</button>
+        <button class="main-btn" style="margin-top: 30px;" onclick="showPage('home')">RETURN HOME</button>
     </section>
 
-    <footer id="contacts">
-        <div class="contact-grid">
+    <section id="pumps" class="page-section hidden">
+        <h1>FWgerman<span class="highlight">PUMPS</span></h1>
+        <p id="pump-intro">Expert assembly ensuring reliable performance by FWGERMAN PUMPS.</p>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3 class="highlight">01. Assembly</h3>
+                <p>Skilled engineers in the UAE building high-performance submersible systems.</p>
+            </div>
+            <div class="info-card">
+                <h3 class="highlight">02. Performance</h3>
+                <p>Engineered for extreme environments, ensuring peak efficiency in any condition.</p>
+            </div>
+            <div class="info-card">
+                <h3 class="highlight">03. Support</h3>
+                <p>Local warranty and workmanship coverage that domestic competitors cannot match.</p>
+            </div>
+        </div>
+
+        <div class="about-trigger" onclick="this.classList.toggle('active')">
+            <strong>[ OUR MISSION - CLICK ]</strong>
+            <div class="about-text" id="pump-about">
+                Combining German precision with local expertise to deliver world-class water solutions.
+            </div>
+        </div>
+        <button class="main-btn" style="margin-top: 30px;" onclick="showPage('home')">RETURN HOME</button>
+    </section>
+
+    <footer id="footer-contact">
+        <div class="contact-box">
             <div>
-                <h3>INTERNATIONAL</h3>
+                <h4 class="highlight">INTERNATIONAL</h4>
                 <p>+971 52 746 8925</p>
             </div>
             <div>
-                <h3>PAKISTAN</h3>
+                <h4 class="highlight">PAKISTAN</h4>
                 <p>+92 343 2767997</p>
             </div>
         </div>
-        <p>contact@fwgermanpumps.ae</p>
-        <div class="copyright">© 2025. All rights reserved.</div>
+        <p style="letter-spacing: 1px;">contact@fwgermanpumps.ae</p>
+        <p style="margin-top: 40px; opacity: 0.5;">© 2025. All rights reserved.</p>
     </footer>
 
     <script>
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        // PAGE SWITCHING WITH BLUR MORPH
+        function showPage(id) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
+            setTimeout(() => {
+                document.getElementById(id).classList.remove('hidden');
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }, 500);
         }
 
-        function switchPage(pageId) {
-            // Apply Blur Morphing
-            document.querySelectorAll('.page').forEach(p => {
-                p.classList.add('hidden');
-            });
+        // SCROLL TO CONTACT
+        function scrollToContact() {
+            document.getElementById('footer-contact').scrollIntoView({behavior: 'smooth'});
+        }
 
-            setTimeout(() => {
-                const target = document.getElementById(pageId);
-                target.classList.remove('hidden');
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            }, 600);
+        // THEME TOGGLE
+        function toggleTheme() {
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        }
+
+        // LANGUAGE LOGIC
+        const translations = {
+            en: {
+                title: "FWgermanTECH & FWgermanPUMPS",
+                tagline: "Authentic German pumps, motors, and components brought to the UAE and Pakistan.",
+                techIntro: "Genuine German components sourced carefully by FWGERMANTECH.",
+                pumpIntro: "Expert assembly ensuring reliable performance by FWGERMAN PUMPS.",
+                homeBottom: "We deliver fast, dependable support across the UAE and Pakistan."
+            },
+            ar: {
+                title: "إف دبليو جيرمان تك & إف دبليو جيرمان بمب",
+                tagline: "مضخات ومحركات ومكونات ألمانية أصلية مقدمة إلى الإمارات وباكستان مع ضمان كامل.",
+                techIntro: "مكونات ألمانية أصلية تم الحصول عليها بعناية من قبل FWGERMANTECH.",
+                pumpIntro: "تجميع احترافي يضمن أداءً موثوقًا من قبل FWGERMAN PUMPS.",
+                homeBottom: "نحن نقدم دعمًا سريعًا وموثوقًا في جميع أنحاء الإمارات وباكستان."
+            }
+        };
+
+        function changeLang(lang) {
+            document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+            const data = translations[lang];
+            document.getElementById('main-title').innerText = data.title;
+            document.getElementById('main-tagline').innerText = data.tagline;
+            document.getElementById('tech-intro').innerText = data.techIntro;
+            document.getElementById('pump-intro').innerText = data.pumpIntro;
+            document.getElementById('home-bottom-text').innerText = data.homeBottom;
         }
     </script>
 </body>
