@@ -1,0 +1,16 @@
+{
+  "name": "FW German Engineering",
+  "short_name": "FW German",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#004e92",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+
