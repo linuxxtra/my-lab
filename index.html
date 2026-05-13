@@ -3,59 +3,145 @@ cat << 'EOF' > index.html
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINUXXTRA | Hacker Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LINUXXTRA AI</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #04060f; color: #00ffcc; font-family: 'Courier New', monospace; margin: 0; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(0, 255, 204, 0.2); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
-<body>
+<body style="margin: 0; background: #000; overflow: hidden;">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useRef, useEffect } = React;
 
-        const GEMINI_KEY = "AIzaSyDqqLFZ4GyYNiejqFykzKsi0B_9ilja7tiQ";
-        const SYSTEM_PROMPT = `You are LINUXXTRA, the most advanced AI assistant. You excel at Linux, Termux, Coding, and Cybersecurity.`;
+        // UPDATED API KEY
+        const GEMINI_KEY = "AIzaSyATQcAPE1GHoDJTB3S9JUYRD_9uq6eoIlQ";
+        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`;
+
+        const SYSTEM_PROMPT = `You are LINUXXTRA, the most advanced AI assistant ever created. You are an absolute MASTER of coding — writing flawless, production-grade, fully commented code in ANY language.
+
+You excel at everything:
+- 🐧 Linux & Termux mastery
+- 💻 Coding in ANY language
+- 🌐 Full-stack web development
+- 🔐 Cybersecurity & ethical hacking
+- 🤖 AI & Machine Learning
+- 📱 Mobile app development
+- 🚀 Business strategy & entrepreneurship
+- 🎨 UI/UX design
+- 🧠 Science, math, & general knowledge
+- ❤️ Life advice & career guidance`;
+
+        const THEMES = {
+          aurora:  { name:"Aurora",  p:"#00ffcc", s:"#7b2fff", a:"#00eeff", bg:"#04060f", card:"#080b18", g:"0,255,204" },
+          solar:   { name:"Solar",   p:"#ffaa00", s:"#ff4400", a:"#ffe066", bg:"#0f0800", card:"#150c00", g:"255,170,0" },
+          neon:    { name:"Neon",    p:"#ff00aa", s:"#aa00ff", a:"#ff88dd", bg:"#0d0010", card:"#130015", g:"255,0,170" },
+          arctic:  { name:"Arctic",  p:"#00ccff", s:"#0044ff", a:"#88ddff", bg:"#000d14", card:"#001018", g:"0,204,255" },
+          matrix:  { name:"Matrix",  p:"#00ff41", s:"#00aa22", a:"#88ffaa", bg:"#000800", card:"#000d00", g:"0,255,65" },
+          crimson: { name:"Crimson", p:"#ff3355", s:"#cc0022", a:"#ff8899", bg:"#0f0005", card:"#150008", g:"255,51,85" },
+        };
+
+        const QUICK = [
+          {i:"🐧",l:"Linux Master",  m:"Teach me advanced Linux commands"},
+          {i:"💻",l:"Write Code",    m:"Write me complete code for a project"},
+          {i:"🌐",l:"Full Website",  m:"Build a professional website with HTML CSS and JS"},
+          {i:"🔐",l:"Cybersecurity", m:"Explain ethical hacking concepts"},
+        ];
 
         function LinuxxtraAI() {
-            const [messages, setMessages] = useState([
-                { role: "assistant", content: "# Welcome to LINUXXTRA 🧠\nI am your **ultra-advanced engine**. Ready for Linux, Coding, and Cyber tasks.", time: new Date().toLocaleTimeString() }
-            ]);
+          const [messages, setMessages] = useState([{
+            role: "assistant",
+            content: "# Welcome to LINUXXTRA AI! 🧠✨\n\nUnlimited chat. What shall we build today?",
+            time: new Date().toLocaleTimeString()
+          }]);
+          const [input, setInput] = useState("");
+          const [loading, setLoading] = useState(false);
+          const [theme, setTheme] = useState("aurora");
+          const [showSidebar, setShowSidebar] = useState(false);
+          const [battery, setBattery] = useState(null);
+          const bottomRef = useRef(null);
+          const t = THEMES[theme];
 
-            return (
-                <div className="flex flex-col h-screen p-4">
-                    <header className="glass p-4 rounded-t-xl flex justify-between items-center border-b border-[#00ffcc]">
-                        <h1 className="text-xl font-bold tracking-widest text-[#00ffcc]">LINUXXTRA_HUB.v1</h1>
-                        <div className="text-xs opacity-70">STATUS: ENCRYPTED</div>
-                    </header>
-                    
-                    <main className="flex-1 overflow-y-auto glass p-4 space-y-4">
-                        {messages.map((m, i) => (
-                            <div key={i} className={`p-3 rounded-lg ${m.role === 'user' ? 'bg-[#00ffcc]/10 ml-8' : 'bg-slate-800/50 mr-8'}`}>
-                                <div className="text-[10px] opacity-50 mb-1">{m.role.toUpperCase()} - {m.time}</div>
-                                <div className="text-sm leading-relaxed">{m.content}</div>
-                            </div>
-                        ))}
-                    </main>
+          useEffect(() => {
+            if (navigator.getBattery) {
+              navigator.getBattery().then(bat => setBattery(Math.round(bat.level * 100)));
+            }
+          }, []);
 
-                    <footer className="glass p-4 rounded-b-xl border-t border-[#00ffcc]">
-                        <div className="flex gap-2">
-                            <input type="text" placeholder="Enter command..." className="bg-black/50 border border-[#00ffcc]/30 rounded px-4 py-2 w-full focus:outline-none focus:border-[#00ffcc] text-[#00ffcc]" />
-                            <button className="bg-[#00ffcc] text-black px-6 py-2 rounded font-bold hover:bg-white transition-all">EXEC</button>
-                        </div>
-                    </footer>
+          useEffect(() => {
+            bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, [messages, loading]);
+
+          const sendMessage = async (text) => {
+            const userText = (text || input).trim();
+            if (!userText || loading) return;
+            
+            const userMsg = { role: "user", content: userText, time: new Date().toLocaleTimeString() };
+            const newHistory = [...messages, userMsg];
+            setMessages(newHistory);
+            setInput("");
+            setLoading(true);
+
+            try {
+              const res = await fetch(GEMINI_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                  contents: newHistory.map(m => ({
+                    role: m.role === "assistant" ? "model" : "user",
+                    parts: [{ text: m.content }]
+                  }))
+                })
+              });
+              const data = await res.json();
+              const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              setMessages(prev => [...prev, { role: "assistant", content: reply || "API Error", time: new Date().toLocaleTimeString() }]);
+            } catch (e) {
+              setMessages(prev => [...prev, { role: "assistant", content: "Connection Error", time: new Date().toLocaleTimeString() }]);
+            }
+            setLoading(false);
+          };
+
+          const fmt = (text) => {
+            if (!text) return "";
+            return text
+              .replace(/```(\w*)\n?([\s\S]*?)
+```/g, '<pre style="background:#000;padding:10px;border-radius:8px;color:#00ffcc;overflow:auto"><code>$2</code></pre>')
+              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\n/g, "<br/>");
+          };
+
+          return (
+            <div style={{ height:"100dvh", background:t.bg, color:"white", display:"flex", flexDirection:"column", fontFamily:"'Rajdhani', sans-serif" }}>
+              <div style={{ padding:15, background:t.card, borderBottom:`1px solid ${t.p}33`, display:"flex", justifyContent:"space-between" }}>
+                <span style={{ color:t.p, fontWeight:900, fontFamily:"'Orbitron'" }}>LINUXXTRA</span>
+                <span>{battery}%</span>
+              </div>
+              <div style={{ flex:1, overflowY:"auto", padding:15 }}>
+                {messages.map((m, i) => (
+                  <div key={i} style={{ marginBottom:15, textAlign:m.role==="user"?"right":"left" }}>
+                    <div style={{ display:"inline-block", padding:12, borderRadius:15, background:m.role==="user"?t.p:"rgba(255,255,255,0.05)", color:m.role==="user"?"#000":"#fff", maxWidth:"85%" }}
+                         dangerouslySetInnerHTML={{ __html: fmt(m.content) }} />
+                  </div>
+                ))}
+                {loading && <div style={{ color:t.p }}>Thinking...</div>}
+                <div ref={bottomRef} />
+              </div>
+              <div style={{ padding:15, background:t.card }}>
+                <div style={{ display:"flex", gap:10 }}>
+                  <textarea value={input} onChange={e=>setInput(e.target.value)} style={{ flex:1, borderRadius:10, padding:10, background:"#000", color:"#fff", border:`1px solid ${t.p}44` }} />
+                  <button onClick={() => sendMessage()} style={{ background:t.p, border:"none", borderRadius:10, padding:"0 20px" }}>➤</button>
                 </div>
-            );
+              </div>
+            </div>
+          );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<LinuxxtraAI />);
+        root.render(<LinuxxtraAI/>);
     </script>
 </body>
 </html>
