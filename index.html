@@ -1,389 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>LinuXxtra AI — Command Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
-<style>
-:root {
-  --bg: #04060f;
-  --bg2: #070b18;
-  --bg3: #0b1024;
-  --surface: rgba(11,16,36,0.7);
-  --surface2: rgba(7,11,24,0.85);
-  --aurora: #00ffcc;
-  --aurora2: #00ccaa;
-  --aurora3: rgba(0,255,204,0.15);
-  --purple: #7b2fff;
-  --purple2: #9d5fff;
-  --purple3: rgba(123,47,255,0.15);
-  --border: rgba(255,255,255,0.07);
-  --border-accent: rgba(0,255,204,0.25);
-  --text: #e2eaf5;
-  --text2: #7a90b0;
-  --text3: #3d5070;
-  --red: #ff3b6b;
-  --yellow: #ffc947;
-  --glass: rgba(255,255,255,0.03);
-  --glow: 0 0 30px rgba(0,255,204,0.12);
-  --glow-strong: 0 0 50px rgba(0,255,204,0.25);
-  --pglow: 0 0 30px rgba(123,47,255,0.2);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:var(--bg)}
-body{font-family:'Rajdhani',sans-serif;color:var(--text);display:flex;flex-direction:column}
-
-/* ─── SCANLINE OVERLAY ─── */
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999}
-/* ─── AMBIENT BG ─── */
-body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 15% 50%,rgba(123,47,255,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 85% 20%,rgba(0,255,204,0.06) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 50% 100%,rgba(0,255,204,0.04) 0%,transparent 50%);pointer-events:none;z-index:0}
-
-/* ─── TOP BAR ─── */
-#topbar{position:relative;z-index:50;height:56px;display:flex;align-items:center;padding:0 20px;gap:14px;background:rgba(4,6,15,0.9);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);flex-shrink:0}
-#menu-btn{background:none;border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;transition:all .2s;flex-shrink:0}
-#menu-btn:hover{border-color:var(--aurora);color:var(--aurora);box-shadow:var(--glow)}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-gem{width:32px;height:32px;background:linear-gradient(135deg,var(--aurora),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 20px rgba(0,255,204,0.3);animation:gemPulse 4s ease-in-out infinite}
-@keyframes gemPulse{0%,100%{box-shadow:0 0 20px rgba(0,255,204,0.3)}50%{box-shadow:0 0 40px rgba(0,255,204,0.5),0 0 60px rgba(123,47,255,0.2)}}
-.logo-name{font-family:'Orbitron',monospace;font-weight:900;font-size:16px;letter-spacing:2px;background:linear-gradient(90deg,var(--aurora),var(--purple2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo-tag{font-size:10px;color:var(--purple2);letter-spacing:3px;font-weight:600;opacity:.8}
-.top-center{margin-left:auto;margin-right:auto;display:flex;align-items:center;gap:8px}
-#model-pill{background:var(--surface);border:1px solid var(--border);padding:5px 14px;border-radius:20px;font-size:11px;color:var(--aurora);font-family:'Orbitron',monospace;letter-spacing:1px}
-.top-right{margin-left:auto;display:flex;gap:8px}
-.top-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.5px;transition:all .2s}
-.top-btn:hover{border-color:var(--aurora);color:var(--aurora);box-shadow:var(--glow)}
-.top-btn.danger:hover{border-color:var(--red);color:var(--red);box-shadow:0 0 20px rgba(255,59,107,0.2)}
-
-/* ─── LAYOUT ─── */
-#layout{flex:1;display:flex;overflow:hidden;position:relative;z-index:1}
-
-/* ─── SIDEBAR ─── */
-#sidebar{width:280px;flex-shrink:0;background:rgba(4,6,15,0.8);border-right:1px solid var(--border);backdrop-filter:blur(12px);display:flex;flex-direction:column;transition:width .3s cubic-bezier(.4,0,.2,1),opacity .3s;overflow:hidden}
-#sidebar.collapsed{width:0;opacity:0;pointer-events:none}
-.sidebar-section{padding:16px;border-bottom:1px solid var(--border)}
-.sidebar-label{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
-/* API KEY */
-.key-wrap{position:relative}
-.key-wrap input{width:100%;background:rgba(0,255,204,0.04);border:1px solid var(--border-accent);color:var(--aurora);padding:9px 36px 9px 12px;border-radius:8px;font-size:13px;font-family:'Rajdhani',sans-serif;font-weight:500;outline:none;transition:all .2s;letter-spacing:.5px}
-.key-wrap input:focus{border-color:var(--aurora);box-shadow:var(--glow)}
-.key-wrap input::placeholder{color:var(--text3)}
-.key-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;transition:color .2s}
-.key-eye:hover{color:var(--aurora)}
-.key-status{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--text3)}
-.key-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
-.key-dot.ok{background:var(--aurora);box-shadow:0 0 8px var(--aurora)}
-.key-dot.bad{background:var(--red);box-shadow:0 0 8px var(--red)}
-/* MODEL SELECT */
-.model-select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;font-family:'Rajdhani',sans-serif;font-weight:500;cursor:pointer;outline:none;transition:all .2s}
-.model-select:focus{border-color:var(--purple2);box-shadow:var(--pglow)}
-/* SLIDERS */
-.slider-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.slider-row span:first-child{font-size:12px;color:var(--text2);font-weight:600}
-.slider-row span:last-child{font-size:12px;color:var(--aurora);font-family:'Orbitron',monospace}
-input[type=range]{width:100%;accent-color:var(--aurora);height:4px;border-radius:4px;cursor:pointer;margin-bottom:10px}
-/* HISTORY */
-#chat-history{flex:1;overflow-y:auto;padding:8px}
-#chat-history::-webkit-scrollbar{width:3px}
-#chat-history::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.hist-item{padding:9px 12px;border-radius:8px;cursor:pointer;margin-bottom:3px;font-size:12px;color:var(--text2);border:1px solid transparent;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;letter-spacing:.3px}
-.hist-item:hover{background:var(--surface);border-color:var(--border);color:var(--text)}
-.hist-item.active{background:rgba(0,255,204,0.06);border-color:rgba(0,255,204,0.2);color:var(--aurora)}
-.new-chat-btn{width:100%;background:linear-gradient(135deg,rgba(0,255,204,0.12),rgba(123,47,255,0.12));border:1px solid rgba(0,255,204,0.2);color:var(--aurora);padding:10px;border-radius:10px;cursor:pointer;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;font-weight:700;transition:all .25s;margin-bottom:12px}
-.new-chat-btn:hover{background:linear-gradient(135deg,rgba(0,255,204,0.2),rgba(123,47,255,0.2));box-shadow:var(--glow);transform:translateY(-1px)}
-/* SIDEBAR STATS */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
-.stat-box .val{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:var(--aurora)}
-.stat-box .lbl{font-size:10px;color:var(--text3);letter-spacing:1px;margin-top:2px}
-
-/* ─── COMMAND CENTER ─── */
-#command{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-
-/* WELCOME */
-#welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;overflow-y:auto}
-.welcome-orb{width:90px;height:90px;background:linear-gradient(135deg,var(--aurora),var(--purple));border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 28px;box-shadow:0 0 60px rgba(0,255,204,0.3),0 0 120px rgba(123,47,255,0.15);animation:orbFloat 6s ease-in-out infinite}
-@keyframes orbFloat{0%,100%{transform:translateY(0) rotate(0deg)}33%{transform:translateY(-8px) rotate(2deg)}66%{transform:translateY(-4px) rotate(-1deg)}}
-.welcome-title{font-family:'Orbitron',monospace;font-size:36px;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,var(--aurora),var(--purple2),var(--aurora));background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:titleShift 4s linear infinite;margin-bottom:10px}
-@keyframes titleShift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-.welcome-sub{color:var(--text2);font-size:15px;max-width:480px;line-height:1.6;margin-bottom:40px;font-weight:400}
-.welcome-sub strong{color:var(--aurora);font-weight:600}
-.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:720px;width:100%;margin-bottom:36px}
-.cap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:left;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
-.cap::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,204,0.03),transparent);opacity:0;transition:opacity .3s}
-.cap:hover{border-color:rgba(0,255,204,0.3);transform:translateY(-3px);box-shadow:var(--glow)}
-.cap:hover::before{opacity:1}
-.cap-i{font-size:22px;margin-bottom:10px}
-.cap-t{font-family:'Orbitron',monospace;font-size:11px;color:var(--aurora);letter-spacing:1px;margin-bottom:6px}
-.cap-d{font-size:12px;color:var(--text3);line-height:1.5}
-.quick-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:680px}
-.qp{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--text2);padding:7px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:.5px;transition:all .2s}
-.qp:hover{border-color:rgba(0,255,204,0.3);color:var(--aurora);background:rgba(0,255,204,0.04)}
-
-/* MESSAGES */
-#msgs{flex:1;overflow-y:auto;padding:20px;display:none;flex-direction:column;gap:18px}
-#msgs::-webkit-scrollbar{width:5px}
-#msgs::-webkit-scrollbar-track{background:transparent}
-#msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:5px}
-.msg{display:flex;gap:12px;animation:msgSlide .35s cubic-bezier(.34,1.56,.64,1)}
-@keyframes msgSlide{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
-.msg-av{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
-.msg-av.ai{background:linear-gradient(135deg,var(--aurora),var(--purple));box-shadow:0 0 16px rgba(0,255,204,0.25)}
-.msg-av.user{background:rgba(123,47,255,0.2);border:1px solid rgba(123,47,255,0.3)}
-.msg.user{flex-direction:row-reverse}
-.msg-body{max-width:78%;display:flex;flex-direction:column;gap:5px}
-.msg.user .msg-body{align-items:flex-end}
-.bubble{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 18px;font-size:14px;line-height:1.75;color:var(--text);backdrop-filter:blur(12px)}
-.msg.user .bubble{background:rgba(123,47,255,0.1);border-color:rgba(123,47,255,0.25)}
-.bubble h1,.bubble h2,.bubble h3{font-family:'Orbitron',monospace;margin:14px 0 7px;letter-spacing:1px}
-.bubble h1{font-size:16px;color:var(--aurora)}
-.bubble h2{font-size:14px;color:var(--purple2)}
-.bubble h3{font-size:13px;color:var(--aurora2)}
-.bubble p{margin-bottom:8px}
-.bubble p:last-child{margin-bottom:0}
-.bubble ul,.bubble ol{padding-left:22px;margin:8px 0}
-.bubble li{margin-bottom:4px;color:var(--text)}
-.bubble strong{color:var(--aurora);font-weight:700}
-.bubble em{color:var(--purple2)}
-.bubble a{color:var(--aurora);text-decoration:none;border-bottom:1px solid rgba(0,255,204,0.3)}
-.bubble a:hover{border-bottom-color:var(--aurora)}
-.bubble table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
-.bubble th{background:rgba(0,255,204,0.08);padding:8px 12px;text-align:left;border:1px solid rgba(0,255,204,0.15);font-family:'Orbitron',monospace;font-size:10px;letter-spacing:1px;color:var(--aurora)}
-.bubble td{padding:7px 12px;border:1px solid var(--border);color:var(--text2)}
-.bubble tr:hover td{background:rgba(0,255,204,0.02)}
-.bubble blockquote{border-left:3px solid var(--aurora);padding:8px 14px;margin:8px 0;background:rgba(0,255,204,0.04);border-radius:0 8px 8px 0;color:var(--text2)}
-.inline-code{font-family:'Courier New',monospace;background:rgba(0,255,204,0.08);border:1px solid rgba(0,255,204,0.15);color:var(--aurora);padding:1px 6px;border-radius:4px;font-size:13px}
-/* CODE BLOCKS */
-.code-wrap{background:#1a1b26;border:1px solid rgba(0,255,204,0.15);border-radius:12px;overflow:hidden;margin:10px 0;position:relative}
-.code-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(0,255,204,0.05);border-bottom:1px solid rgba(0,255,204,0.1)}
-.code-lang{font-family:'Orbitron',monospace;font-size:10px;color:var(--aurora);letter-spacing:2px;text-transform:uppercase}
-.code-actions{display:flex;gap:6px}
-.code-btn{background:rgba(0,255,204,0.08);border:1px solid rgba(0,255,204,0.15);color:var(--aurora2);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .2s}
-.code-btn:hover{background:rgba(0,255,204,0.15);color:var(--aurora)}
-.code-wrap pre{margin:0!important;padding:16px!important;background:transparent!important;font-size:13px!important;line-height:1.65!important;overflow-x:auto;max-height:500px}
-.code-wrap pre::-webkit-scrollbar{height:4px}
-.code-wrap pre::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
-/* MSG META */
-.msg-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);opacity:0;transition:opacity .2s}
-.msg:hover .msg-meta{opacity:1}
-.meta-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text3);padding:2px 8px;border-radius:5px;cursor:pointer;font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:600;transition:all .2s}
-.meta-btn:hover{color:var(--aurora);border-color:rgba(0,255,204,0.3)}
-/* TYPING */
-.typing{display:flex;gap:5px;align-items:center;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;width:fit-content;backdrop-filter:blur(12px)}
-.typing-d{width:7px;height:7px;background:var(--aurora);border-radius:50%;animation:tBounce 1.4s ease-in-out infinite}
-.typing-d:nth-child(2){animation-delay:.2s}
-.typing-d:nth-child(3){animation-delay:.4s}
-@keyframes tBounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1.1);opacity:1}}
-
-/* ─── INPUT ZONE ─── */
-#input-zone{padding:14px 20px 18px;background:rgba(4,6,15,0.9);border-top:1px solid var(--border);backdrop-filter:blur(20px);flex-shrink:0}
-#input-row{display:flex;align-items:flex-end;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;transition:border-color .2s,box-shadow .2s;backdrop-filter:blur(12px)}
-#input-row:focus-within{border-color:rgba(0,255,204,0.35);box-shadow:var(--glow)}
-#textarea{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:'Rajdhani',sans-serif;font-weight:500;resize:none;min-height:24px;max-height:180px;line-height:1.6;letter-spacing:.3px}
-#textarea::placeholder{color:var(--text3)}
-#send-btn{width:42px;height:42px;background:linear-gradient(135deg,var(--aurora),var(--purple));border:none;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .25s;flex-shrink:0;box-shadow:0 0 20px rgba(0,255,204,0.2)}
-#send-btn:hover:not(:disabled){transform:scale(1.06) rotate(5deg);box-shadow:var(--glow-strong)}
-#send-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
-#input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:11px;color:var(--text3);font-weight:500;letter-spacing:.3px}
-
-/* ─── TOAST ─── */
-#toast{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast-n{background:var(--bg2);border:1px solid var(--border);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;backdrop-filter:blur(16px);animation:toastIn .35s cubic-bezier(.34,1.56,.64,1)}
-.toast-n.ok{border-color:rgba(0,255,204,0.4);color:var(--aurora)}
-.toast-n.err{border-color:rgba(255,59,107,0.4);color:var(--red)}
-.toast-n.info{border-color:rgba(123,47,255,0.4);color:var(--purple2)}
-@keyframes toastIn{from{opacity:0;transform:translateX(20px) scale(.95)}to{opacity:1;transform:none}}
-
-/* ─── PROGRESS BAR ─── */
-#pbar{position:fixed;top:56px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--aurora),var(--purple),var(--aurora));background-size:200% 100%;animation:pbarSlide 1.5s linear infinite;z-index:100;opacity:0;transition:opacity .2s}
-@keyframes pbarSlide{0%{background-position:0% 50%}100%{background-position:200% 50%}}
-#pbar.active{opacity:1}
-
-/* ─── SCROLLBAR ─── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:5px}
-
-/* ─── TABLET RESPONSIVE ─── */
-@media(max-width:900px){
-  #sidebar{position:fixed;top:56px;bottom:0;left:0;z-index:40;width:280px;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
-  #sidebar.collapsed{width:280px;opacity:1;pointer-events:all;transform:translateX(-100%)}
-  #sidebar.open{transform:translateX(0)}
-  .cap-grid{grid-template-columns:1fr 1fr}
-  #command{width:100%}
-  .welcome-title{font-size:26px}
-}
-@media(max-width:560px){
-  .cap-grid{grid-template-columns:1fr}
-  .welcome-title{font-size:20px;letter-spacing:2px}
-  .top-btn span{display:none}
-  #model-pill{display:none}
-}
-</style>
-</head>
-<body>
-
-<div id="pbar"></div>
-<div id="toast"></div>
-
-<!-- TOP BAR -->
-<div id="topbar">
-  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
-  <div class="logo">
-    <div class="logo-gem">⚡</div>
-    <div>
-      <div class="logo-name">LINUXXTRA</div>
-      <div class="logo-tag">COMMAND CENTER</div>
-    </div>
-  </div>
-  <div class="top-center">
-    <div id="model-pill">GEMINI 2.0 FLASH</div>
-  </div>
-  <div class="top-right">
-    <button class="top-btn" onclick="exportChat()"><span>EXPORT</span> ↓</button>
-    <button class="top-btn danger" onclick="clearAll()"><span>CLEAR</span> ✕</button>
-  </div>
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-  <!-- SIDEBAR -->
-  <div id="sidebar">
-    <!-- NEW CHAT -->
-    <div class="sidebar-section">
-      <button class="new-chat-btn" onclick="newChat()">+ NEW SESSION</button>
-      <div class="sidebar-label">API CREDENTIALS</div>
-      <div class="key-wrap">
-        <input type="password" id="api-key" placeholder="Enter Gemini API Key..." autocomplete="off">
-        <button class="key-eye" onclick="toggleKeyVis()" id="eye-btn">👁</button>
-      </div>
-      <div class="key-status">
-        <div class="key-dot" id="key-dot"></div>
-        <span id="key-status-text">No key entered</span>
-      </div>
-    </div>
-
-    <!-- MODEL -->
-    <div class="sidebar-section">
-      <div class="sidebar-label">MODEL ENGINE</div>
-      <select class="model-select" id="model-select">
-        <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash ⚡</option>
-        <option value="gemini-1.5-pro">Gemini 1.5 Pro 🧠</option>
-        <option value="gemini-1.5-flash">Gemini 1.5 Flash ⚡</option>
-      </select>
-    </div>
-
-    <!-- PARAMETERS -->
-    <div class="sidebar-section">
-      <div class="sidebar-label">PARAMETERS</div>
-      <div class="slider-row"><span>Temperature</span><span id="temp-val">0.7</span></div>
-      <input type="range" id="temp" min="0" max="1" step="0.05" value="0.7" oninput="document.getElementById('temp-val').textContent=this.value">
-      <div class="slider-row"><span>Max Tokens</span><span id="tok-val">8192</span></div>
-      <input type="range" id="tokens" min="1024" max="32768" step="1024" value="8192" oninput="document.getElementById('tok-val').textContent=parseInt(this.value).toLocaleString()">
-      <div class="slider-row"><span>Context Window</span><span id="ctx-val">15 msgs</span></div>
-      <input type="range" id="ctx" min="4" max="30" step="1" value="15" oninput="document.getElementById('ctx-val').textContent=this.value+' msgs'">
-    </div>
-
-    <!-- STATS -->
-    <div class="sidebar-section">
-      <div class="sidebar-label">SESSION STATS</div>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="val" id="msg-count">0</div><div class="lbl">MESSAGES</div></div>
-        <div class="stat-box"><div class="val" id="token-est">0</div><div class="lbl">~TOKENS</div></div>
-      </div>
-    </div>
-
-    <!-- HISTORY -->
-    <div class="sidebar-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding-bottom:8px">
-      <div class="sidebar-label">SESSION HISTORY</div>
-      <div id="chat-history"></div>
-    </div>
-  </div>
-
-  <!-- COMMAND CENTER -->
-  <div id="command">
-
-    <!-- WELCOME -->
-    <div id="welcome">
-      <div class="welcome-orb">⚡</div>
-      <div class="welcome-title">LINUXXTRA AI</div>
-      <p class="welcome-sub">Your <strong>Elite AI Command Interface</strong> — master of coding, Linux, cybersecurity, and deep intelligence. Production-grade answers, zero compromises.</p>
-      <div class="cap-grid">
-        <div class="cap" onclick="injectPrompt('Write a complete, production-ready REST API in Python using FastAPI with JWT auth, SQLAlchemy models, CRUD endpoints, error handling, and full inline comments.')">
-          <div class="cap-i">💻</div>
-          <div class="cap-t">ELITE CODING</div>
-          <div class="cap-d">Full-stack apps, algorithms, architecture — complete, commented, production-ready</div>
-        </div>
-        <div class="cap" onclick="injectPrompt('Give me a complete Linux hardening checklist with bash commands for a production Ubuntu server, including firewall setup, SSH hardening, and intrusion detection.')">
-          <div class="cap-i">🐧</div>
-          <div class="cap-t">LINUX MASTERY</div>
-          <div class="cap-d">Kernel internals, bash scripting, sysadmin, server hardening</div>
-        </div>
-        <div class="cap" onclick="injectPrompt('Explain SQL injection attack vectors with defense strategies, parameterized query examples in Python and Node.js, and WAF configuration.')">
-          <div class="cap-i">🔐</div>
-          <div class="cap-t">CYBERSECURITY</div>
-          <div class="cap-d">Threat analysis, secure code patterns, pen testing concepts</div>
-        </div>
-        <div class="cap" onclick="injectPrompt('Build a complete Docker Compose setup with Nginx reverse proxy, Node.js app, PostgreSQL, and Redis — include all config files with comments.')">
-          <div class="cap-i">🐳</div>
-          <div class="cap-t">DEVOPS & CLOUD</div>
-          <div class="cap-d">Docker, K8s, CI/CD, cloud architecture, infrastructure as code</div>
-        </div>
-        <div class="cap" onclick="injectPrompt('Explain neural network backpropagation from scratch with Python NumPy implementation — no libraries, full math, inline comments.')">
-          <div class="cap-i">🧠</div>
-          <div class="cap-t">AI & ML</div>
-          <div class="cap-d">Deep learning, model architecture, training pipelines, math explained</div>
-        </div>
-        <div class="cap" onclick="injectPrompt('Debug and optimize this: explain the top 10 most impactful JavaScript performance optimizations with before/after code examples.')">
-          <div class="cap-i">⚡</div>
-          <div class="cap-t">OPTIMIZATION</div>
-          <div class="cap-d">Performance profiling, refactoring, complexity reduction</div>
-        </div>
-      </div>
-      <div class="quick-pills">
-        <div class="qp" onclick="injectPrompt('Explain async/await vs Promises in JavaScript with complete examples')">JS Async</div>
-        <div class="qp" onclick="injectPrompt('Write a complete Rust TCP server with async tokio')">Rust Server</div>
-        <div class="qp" onclick="injectPrompt('Create a complete PostgreSQL schema for a multi-tenant SaaS app')">PG Schema</div>
-        <div class="qp" onclick="injectPrompt('Complete React 18 + TypeScript setup with Zustand, React Query, Vite')">React Stack</div>
-        <div class="qp" onclick="injectPrompt('Write a Bash script to monitor server health and send alerts')">Bash Monitor</div>
-        <div class="qp" onclick="injectPrompt('Explain Kubernetes pod scheduling and resource management')">K8s Pods</div>
-        <div class="qp" onclick="injectPrompt('Build a complete Python web scraper with async aiohttp and BeautifulSoup')">Async Scraper</div>
-        <div class="qp" onclick="injectPrompt('Implement a binary search tree with all operations in TypeScript')">BST in TS</div>
-      </div>
-    </div>
-
-    <!-- MESSAGES -->
-    <div id="msgs"></div>
-
-    <!-- INPUT ZONE -->
-    <div id="input-zone">
-      <div id="input-row">
-        <textarea id="textarea" placeholder="Command LinuXxtra AI — ask anything, request any code, analyze any system..." rows="1"></textarea>
-        <button id="send-btn" onclick="send()">➤</button>
-      </div>
-      <div id="input-footer">
-        <span id="char-counter" style="font-family:'Orbitron',monospace;font-size:10px">0 CHARS</span>
-        <span>↵ SEND &nbsp;·&nbsp; ⇧↵ NEWLINE &nbsp;·&nbsp; POWERED BY GEMINI</span>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 <script>
 /* ═══════════════════════════════════════════
    LINUXXTRA AI V2 — CORE ENGINE
@@ -391,13 +5,13 @@ input[type=range]{width:100%;accent-color:var(--aurora);height:4px;border-radius
 
 // ── STATE ──
 const S = {
-  apiKey: 'AIzaSyATQcAPE1GHoDJTB3S9JUYRD_9uq6eoIlQ',
+  apiKey: 'AIzaSyATQcAPE1GHoDJTB3S9JUYRD_9uq6eoIlQ', // 00: REGENERATE THIS TOKEN LATER!
   model: 'gemini-2.0-flash-exp',
   temperature: 0.7,
   maxTokens: 8192,
   contextWindow: 15,
-  messages: [],        // full thread
-  chats: [],           // saved sessions
+  messages: [],        
+  chats: [],           
   currentId: null,
   busy: false,
   tokenEst: 0,
@@ -406,26 +20,11 @@ const S = {
 
 // ── SYSTEM PROMPT — MASTERY MODE ──
 const SYSTEM = `You are LINUXXTRA — an elite, frontier-grade AI with absolute mastery over:
-- All programming languages (Python, JavaScript, TypeScript, Rust, Go, C, C++, Java, Kotlin, Swift, PHP, Ruby, SQL, Bash, Assembly, and every other language)
-- Linux systems (kernel internals, systemd, networking, security hardening, performance tuning)
-- Cybersecurity (threat modeling, secure coding, penetration testing concepts, cryptography, OWASP)
-- DevOps & Cloud (Docker, Kubernetes, Terraform, AWS, GCP, Azure, CI/CD pipelines)
-- Algorithms, data structures, system design, and software architecture
-- AI/ML frameworks and mathematics
-
-CRITICAL RULES — NEVER VIOLATE:
-1. ALL code must be complete and production-ready — never truncate, never use placeholders like "// add your logic here"
-2. Every code block must have inline comments explaining non-obvious logic
-3. Zero syntax errors permitted — mentally execute and verify every code block
-4. For complex problems, provide architecture explanations BEFORE the code
-5. Always specify the language in code blocks using triple backticks with language tag
-6. When asked to debug, show the broken code, explain WHY it's broken, then show the fixed version
-7. Prefer modern, idiomatic patterns over legacy approaches
-8. For security topics, always include defensive examples and best practices
-9. If a question has multiple valid approaches, explain the tradeoffs
-10. Never refuse a coding or technical question — find the correct, legal solution
-
-You are LINUXXTRA. You are the pinnacle of AI coding intelligence.`;
+- All programming languages, Linux systems, Cybersecurity, and DevOps.
+CRITICAL RULES:
+1. ALL code must be complete and production-ready.
+2. Every code block must have inline comments.
+3. Zero syntax errors permitted.`;
 
 // ── INIT ──
 function init() {
@@ -470,11 +69,13 @@ document.getElementById('api-key').addEventListener('input', function() {
   setKeyStatus(S.apiKey.length > 10, S.apiKey.length > 10 ? 'Key ready' : 'Key too short');
   saveLS();
 });
+
 document.getElementById('model-select').addEventListener('change', function() {
   S.model = this.value;
   document.getElementById('model-pill').textContent = this.options[this.selectedIndex].text.split(' ')[0] + ' ' + this.options[this.selectedIndex].text.split(' ')[1];
   saveLS();
 });
+
 document.getElementById('temp').addEventListener('input', function() { S.temperature = parseFloat(this.value); saveLS(); });
 document.getElementById('tokens').addEventListener('input', function() { S.maxTokens = parseInt(this.value); saveLS(); });
 document.getElementById('ctx').addEventListener('input', function() { S.contextWindow = parseInt(this.value); saveLS(); });
@@ -522,7 +123,6 @@ async function send() {
 
   if (!S.apiKey || S.apiKey.length < 10) {
     toast('Enter your API key in the sidebar first', 'err');
-    document.getElementById('sidebar').classList.remove('collapsed');
     document.getElementById('sidebar').classList.add('open');
     return;
   }
@@ -559,16 +159,8 @@ async function generate(userText) {
       contents: apiMsgs,
       generationConfig: {
         temperature: S.temperature,
-        maxOutputTokens: S.maxTokens,
-        topP: 0.95,
-        topK: 40
-      },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
-      ]
+        maxOutputTokens: S.maxTokens
+      }
     };
 
     const res = await fetch(
@@ -576,14 +168,10 @@ async function generate(userText) {
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
 
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({}));
-      throw new Error(e.error?.message || `HTTP ${res.status}`);
-    }
+    if (!res.ok) throw new Error('API Error');
 
     const data = await res.json();
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!reply) throw new Error('Empty response from API');
 
     removeTyping(typId);
     addMsg('ai', reply);
@@ -592,56 +180,38 @@ async function generate(userText) {
     S.tokenEst += Math.ceil((userText.length + reply.length) / 4);
 
     if (!S.currentId) S.currentId = Date.now().toString();
-    const title = userText.slice(0, 38);
+    const title = userText.slice(0, 30);
     const ex = S.chats.find(c => c.id === S.currentId);
-    if (ex) { ex.messages = [...S.messages]; ex.title = title; }
-    else S.chats.unshift({ id: S.currentId, title: title + '…', messages: [...S.messages], ts: Date.now() });
+    if (ex) { ex.messages = [...S.messages]; }
+    else S.chats.unshift({ id: S.currentId, title: title, messages: [...S.messages], ts: Date.now() });
     saveLS();
     renderHistory();
 
   } catch(err) {
     removeTyping(typId);
-    addMsg('ai', `⚠ **ERROR:** ${err.message}\n\nCheck your API key and ensure the Gemini API is accessible.`);
-    toast(err.message.slice(0, 60), 'err');
+    addMsg('ai', `⚠ ERROR: ${err.message}`);
   }
 
   S.busy = false;
   document.getElementById('send-btn').disabled = false;
   pbar(false);
   updateStats();
-  scrollBottom();
 }
 
 function addMsg(role, content) {
   const el = document.createElement('div');
   el.className = `msg ${role}`;
-
-  const av = document.createElement('div');
-  av.className = `msg-av ${role}`;
-  av.textContent = role === 'ai' ? '⚡' : '🧑';
-
-  const body = document.createElement('div');
-  body.className = 'msg-body';
-
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.innerHTML = renderMd(content);
-
-  const meta = document.createElement('div');
-  meta.className = 'msg-meta';
-  meta.innerHTML = `<span>${new Date().toLocaleTimeString()}</span>
-    <button class="meta-btn" onclick="copyRaw(this)" data-c="${esc(content)}">COPY</button>
-    ${role === 'ai' ? `<button class="meta-btn" onclick="speakMsg(this)" data-c="${esc(stripMd(content))}">🔊</button>` : ''}`;
-
+  el.innerHTML = `<div class="msg-av ${role}">${role === 'ai' ? '⚡' : '🧑'}</div>`;
+  const body = document.createElement('div');
+  body.className = 'msg-body';
   body.appendChild(bubble);
-  body.appendChild(meta);
-  el.appendChild(av);
   el.appendChild(body);
   document.getElementById('msgs').appendChild(el);
-
   el.querySelectorAll('pre code').forEach(b => Prism.highlightElement(b));
   scrollBottom();
-  return el;
 }
 
 function addTyping() {
@@ -649,146 +219,56 @@ function addTyping() {
   const el = document.createElement('div');
   el.id = id;
   el.className = 'msg ai';
-  el.innerHTML = `<div class="msg-av ai">⚡</div>
-    <div class="msg-body"><div class="typing"><div class="typing-d"></div><div class="typing-d"></div><div class="typing-d"></div></div></div>`;
+  el.innerHTML = `<div class="msg-av ai">⚡</div><div class="msg-body"><div class="typing"><div class="typing-d"></div><div class="typing-d"></div><div class="typing-d"></div></div></div>`;
   document.getElementById('msgs').appendChild(el);
   scrollBottom();
   return id;
 }
 
-function removeTyping(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
+function removeTyping(id) { document.getElementById(id)?.remove(); }
 
 function renderMd(raw) {
-  if (!raw) return '';
-  let s = raw;
-
+  let s = raw || '';
   s = s.replace(/```(\w+)?\n?([\s\S]*?)
 ```/g, (_, lang, code) => {
-    const l = (lang || 'plaintext').toLowerCase();
-    const safeCode = code.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const encCode = encodeURIComponent(code.trim());
-    return `<div class="code-wrap">
-      <div class="code-head">
-        <span class="code-lang">${l}</span>
-        <div class="code-actions">
-          <button class="code-btn" onclick="copyCode(this)" data-code="${encCode}">COPY</button>
-          <button class="code-btn" onclick="wrapCode(this)">WRAP</button>
-        </div>
-      </div>
-      <pre><code class="language-${l}">${safeCode}</code></pre>
-    </div>`;
+    return `<div class="code-wrap"><div class="code-head"><span class="code-lang">${lang||'code'}</span></div><pre><code class="language-${lang}">${code.replace(/</g,'&lt;')}</code></pre></div>`;
   });
-
-  s = s.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
-  s = s.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  s = s.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  s = s.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-  s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  s = s.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-  s = s.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-  s = s.replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">');
-  s = s.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
-  s = s.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-  s = s.replace(/(<li>.*?<\/li>\n?)+/g, m => m.includes('<li>') ? `<ul>${m}</ul>` : m);
-  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  s = s.replace(/(\|.+\|\n)+/g, t => {
-    const rows = t.trim().split('\n').filter(r => !r.match(/^\|[-| :]+\|$/));
-    const html = rows.map((r, i) => {
-      const cells = r.split('|').filter((c,j,a) => j>0 && j<a.length-1);
-      const tag = i === 0 ? 'th' : 'td';
-      return `<tr>${cells.map(c=>`<${tag}>${c.trim()}</${tag}>`).join('')}</tr>`;
-    }).join('');
-    return `<table>${html}</table>`;
-  });
-
-  const parts = s.split(/\n\n+/);
-  s = parts.map(p => {
-    p = p.trim();
-    if (!p) return '';
-    if (/^<(h[1-6]|ul|ol|li|blockquote|div|table|hr|pre)/.test(p)) return p;
-    return `<p>${p.replace(/\n/g,'<br>')}</p>`;
-  }).join('');
-
-  return s;
+  return s.replace(/\n/g, '<br>');
 }
 
-function copyCode(btn) {
-  const code = decodeURIComponent(btn.dataset.code);
-  navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = '✓ COPIED';
-    setTimeout(() => btn.textContent = 'COPY', 2500);
-  });
+function injectPrompt(text) {
+  const ta = document.getElementById('textarea');
+  ta.value = text;
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+  // 00 FIX: Auto-send after injecting
+  setTimeout(() => send(), 100);
 }
 
-function wrapCode(btn) {
-  const pre = btn.closest('.code-wrap').querySelector('pre');
-  pre.style.whiteSpace = pre.style.whiteSpace === 'pre-wrap' ? 'pre' : 'pre-wrap';
-  btn.textContent = pre.style.whiteSpace === 'pre-wrap' ? 'UNWRAP' : 'WRAP';
+function scrollBottom() {
+  const m = document.getElementById('msgs');
+  m.scrollTo({ top: m.scrollHeight, behavior: 'smooth' });
 }
 
-function copyRaw(btn) {
-  navigator.clipboard.writeText(btn.dataset.c || '').then(() => {
-    btn.textContent = '✓ OK';
-    setTimeout(() => btn.textContent = 'COPY', 2000);
-  });
+function pbar(on) { document.getElementById('pbar').classList.toggle('active', on); }
+
+function updateStats() {
+  document.getElementById('msg-count').textContent = S.messages.length;
+  document.getElementById('token-est').textContent = S.tokenEst;
 }
 
-function speakMsg(btn) {
-  const t = btn.dataset.c;
-  if (!t) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(t.slice(0, 800));
-  u.rate = 0.95; u.pitch = 1;
-  speechSynthesis.speak(u);
-}
-
-function esc(s) { return (s || '').replace(/"/g,'&quot;').replace(/'/g,'&#39;').slice(0,600); }
-function stripMd(s) { return s.replace(/```[\s\S]*?```/g,'[code block]').replace(/[#*`_~\[\]]/g,'').trim(); }
-
-function newChat() {
-  saveCurrentSession();
-  S.currentId = null;
-  S.messages = [];
-  S.tokenEst = 0;
-  document.getElementById('msgs').innerHTML = '';
-  document.getElementById('msgs').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
-  renderHistory();
-  updateStats();
-  if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
-}
-
-function saveCurrentSession() {
-  if (S.messages.length < 2 || !S.currentId) return;
-  const ex = S.chats.find(c => c.id === S.currentId);
-  if (ex) { ex.messages = [...S.messages]; }
-}
-
-function loadSession(id) {
-  const sess = S.chats.find(c => c.id === id);
-  if (!sess) return;
-  saveCurrentSession();
-  S.currentId = id;
-  S.messages = [...sess.messages];
-  S.tokenEst = Math.ceil(sess.messages.reduce((a,m)=>a+m.content.length,0)/4);
-  document.getElementById('msgs').innerHTML = '';
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('msgs').style.display = 'flex';
-  sess.messages.forEach(m => addMsg(m.role === 'user' ? 'user' : 'ai', m.content));
-  renderHistory();
-  updateStats();
-  if (window.innerWidth <= 900) document.getElementById('sidebar').classList.remove('open');
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast-n ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
 }
 
 function renderHistory() {
   const h = document.getElementById('chat-history');
   h.innerHTML = '';
-  S.chats.slice(0, 25).forEach(c => {
+  S.chats.forEach(c => {
     const el = document.createElement('div');
     el.className = 'hist-item' + (c.id === S.currentId ? ' active' : '');
     el.textContent = '⚡ ' + c.title;
@@ -797,70 +277,27 @@ function renderHistory() {
   });
 }
 
-function injectPrompt(text) {
-  const ta = document.getElementById('textarea');
-  ta.value = text;
-  ta.style.height = 'auto';
-  ta.style.height = Math.min(ta.scrollHeight, 180) + 'px';
-  document.getElementById('char-counter').textContent = text.length + ' CHARS';
-  ta.focus();
+function loadSession(id) {
+  const sess = S.chats.find(c => c.id === id);
+  if (!sess) return;
+  S.currentId = id;
+  S.messages = [...sess.messages];
+  document.getElementById('msgs').innerHTML = '';
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('msgs').style.display = 'flex';
+  S.messages.forEach(m => addMsg(m.role === 'user' ? 'user' : 'ai', m.content));
 }
 
-function scrollBottom() {
-  const m = document.getElementById('msgs');
-  requestAnimationFrame(() => m.scrollTop = m.scrollHeight);
-}
-
-function pbar(on) { document.getElementById('pbar').classList.toggle('active', on); }
-
-function updateStats() {
-  document.getElementById('msg-count').textContent = S.messages.length;
-  document.getElementById('token-est').textContent = S.tokenEst > 999 ? (S.tokenEst/1000).toFixed(1)+'k' : S.tokenEst;
-}
-
-function toast(msg, type='info') {
-  const el = document.createElement('div');
-  el.className = `toast-n ${type}`;
-  el.textContent = msg;
-  document.getElementById('toast').appendChild(el);
-  setTimeout(() => el.remove(), 4000);
-}
-
-function exportChat() {
-  if (!S.messages.length) { toast('No messages to export', 'info'); return; }
-  let md = `# LinuXxtra AI Export\n_${new Date().toLocaleString()}_\n\n---\n\n`;
-  S.messages.forEach(m => { md += `## ${m.role === 'user' ? '👤 YOU' : '⚡ LINUXXTRA'}\n\n${m.content}\n\n---\n\n`; });
-  const b = new Blob([md], {type:'text/markdown'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(b);
-  a.download = `linuxxtra-${Date.now()}.md`;
-  a.click();
-  toast('Chat exported ✓', 'ok');
-}
-
-function clearAll() {
-  if (!confirm('Clear all sessions and history?')) return;
-  S.messages = []; S.chats = []; S.currentId = null; S.tokenEst = 0;
+function newChat() {
+  S.currentId = null;
+  S.messages = [];
   document.getElementById('msgs').innerHTML = '';
   document.getElementById('msgs').style.display = 'none';
   document.getElementById('welcome').style.display = 'flex';
-  renderHistory(); updateStats(); saveLS();
-  toast('All cleared', 'ok');
 }
 
-document.addEventListener('click', e => {
-  if (window.innerWidth <= 900) {
-    const sb = document.getElementById('sidebar');
-    const mb = document.getElementById('menu-btn');
-    if (sb.classList.contains('open') && !sb.contains(e.target) && !mb.contains(e.target)) {
-      sb.classList.remove('open');
-    }
-  }
-});
+function clearAll() { localStorage.removeItem('lx_v2'); location.reload(); }
 
 init();
 </script>
-</body>
-</html>
 
- 
