@@ -1,197 +1,732 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINUXXTRA OMNIVERSE</title>
-    
-    <!-- NEURAL INTERFACE FONTS -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Fira+Code:wght@300;500;700&family=Rajdhani:wght@300;600;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width,initial-scale=1">  
+<title>LINUXXTRA — IGCSE Maths Mastery</title>  
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">  
+<style>  
+*{margin:0;padding:0;box-sizing:border-box;}  
+:root{  
+  --green:#00ff41;--green2:#00cc33;--red:#ff2244;--gold:#ffd700;  
+  --bg:#020c02;--glass:rgba(0,255,65,0.04);--border:rgba(0,255,65,0.18);  
+  --text:#c8ffd4;--dim:rgba(200,255,212,0.45);  
+}  
+html{scroll-behavior:smooth;}  
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;min-height:100vh;}  /* LEAVES CANVAS */
+#leaves-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
 
-    <style>
-        :root {
-            --neon-green: #00ff41; --deep-cyber: #000a00; --electric-blue: #00d9ff;
-            --glass: rgba(0, 20, 5, 0.92); --border-glow: 0 0 15px rgba(0, 255, 65, 0.4);
-        }
+/* NOISE */
+body::after{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:.018;z-index:1;pointer-events:none;}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; cursor: crosshair; }
-        
-        body { background: var(--deep-cyber); color: white; overflow-x: hidden; }
+/* WRAPPER */
+#app{position:relative;z-index:2;}
 
-        /* 16K GPU CANVAS */
-        #render-surface { position: fixed; inset: 0; z-index: -1; filter: blur(1px); }
+/* HEADER */
+header{text-align:center;padding:48px 20px 20px;border-bottom:1px solid var(--border);background:rgba(0,10,0,0.7);backdrop-filter:blur(14px);}
+.made-by{font-family:'Share Tech Mono',monospace;font-size:.75rem;letter-spacing:6px;color:var(--green2);opacity:0;animation:fadeUp .8s .2s forwards;}
+h1.site-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,5vw,3.2rem);font-weight:900;letter-spacing:4px;color:var(--green);text-shadow:0 0 30px rgba(0,255,65,.5),0 0 60px rgba(0,255,65,.2);opacity:0;animation:fadeUp .8s .5s forwards;margin:10px 0 6px;}
+.sub-title{font-family:'Share Tech Mono',monospace;font-size:.8rem;letter-spacing:3px;color:var(--dim);opacity:0;animation:fadeUp .8s .8s forwards;}
 
-        /* HUD TOP BAR */
-        .omni-hud {
-            position: sticky; top: 0; z-index: 1000;
-            background: var(--glass); border-bottom: 2px solid var(--neon-green);
-            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
-            backdrop-filter: blur(20px); box-shadow: var(--border-glow);
-        }
+/* TABS */
+nav.tabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:16px 20px;position:sticky;top:0;z-index:50;background:rgba(2,12,2,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.tab-btn{font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:2px;padding:10px 18px;background:rgba(0,255,65,.06);border:1px solid var(--border);color:var(--dim);cursor:pointer;border-radius:4px;transition:all .3s;white-space:nowrap;}
+.tab-btn:hover,.tab-btn.active{background:rgba(0,255,65,.15);color:var(--green);border-color:var(--green);box-shadow:0 0 12px rgba(0,255,65,.25);}
 
-        /* 1000-PAGE CONTENT GENERATOR SCROLL */
-        .content-matrix { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
-            gap: 30px; padding: 40px 5%; 
-        }
+/* PANELS */
+.panel{display:none;padding:30px 20px;max-width:1100px;margin:0 auto;animation:panelIn .4s ease;}
+.panel.active{display:block;}
+@keyframes panelIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-        .module-card {
-            background: var(--glass); border: 1px solid var(--neon-green);
-            border-radius: 12px; padding: 30px; position: relative;
-            transition: 0.4s; overflow: hidden;
-        }
-        .module-card:hover { transform: scale(1.02); border-color: var(--electric-blue); box-shadow: 0 0 30px rgba(0, 217, 255, 0.3); }
+/* GLASS CARD */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px;backdrop-filter:blur(10px);transition:box-shadow .3s;}
+.card:hover{box-shadow:0 0 20px rgba(0,255,65,.1);}
+.card h2{font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--green);margin-bottom:10px;letter-spacing:2px;}
+.card h3{font-family:'Orbitron',monospace;font-size:.85rem;color:var(--gold);margin:14px 0 6px;letter-spacing:1px;}
+.card p,.card li{font-size:.95rem;line-height:1.8;color:var(--text);margin-bottom:6px;}
+.card ul{padding-left:20px;}
+.card code{font-family:'Share Tech Mono',monospace;color:var(--green);background:rgba(0,255,65,.08);padding:2px 6px;border-radius:3px;font-size:.85rem;}
+.tag{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:2px;padding:3px 10px;border:1px solid var(--green2);color:var(--green2);border-radius:20px;margin-bottom:10px;}
+.trick-box{background:rgba(255,215,0,.06);border-left:3px solid var(--gold);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;}
+.trick-box p{color:#ffe066;}
+.example-box{background:rgba(0,200,255,.05);border-left:3px solid #00cfff;padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;}
+.example-box p{color:#a0efff;}
+.mistake-box{background:rgba(255,30,30,.05);border-left:3px solid var(--red);padding:12px 16px;margin:10px 0;border-radius:0 6px 6px 0;}
+.mistake-box p{color:#ffa0a0;}
 
-        /* VIRTUAL TERMUX TERMINAL */
-        .terminal-container {
-            background: #000; border-radius: 8px; padding: 20px;
-            font-family: 'Fira Code', monospace; height: 400px;
-            overflow-y: auto; border-left: 5px solid var(--neon-green);
-        }
-        .t-line { margin-bottom: 5px; font-size: 0.9rem; }
-        .t-user { color: var(--neon-green); font-weight: bold; }
-        .t-input { background: transparent; border: none; color: var(--electric-blue); outline: none; width: 80%; font-family: inherit; }
+/* CHAPTER LIST */
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.ch-btn{font-family:'Orbitron',monospace;font-size:.75rem;letter-spacing:1px;padding:18px;background:var(--glass);border:1px solid var(--border);color:var(--text);cursor:pointer;border-radius:8px;text-align:left;transition:all .3s;}
+.ch-btn:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 16px rgba(0,255,65,.15);transform:translateY(-2px);}
+.ch-num{font-size:1.4rem;color:var(--green);font-weight:900;display:block;margin-bottom:4px;}
+#chapter-detail{margin-top:20px;}
+.back-btn{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:2px;padding:10px 20px;background:none;border:1px solid var(--green);color:var(--green);cursor:pointer;border-radius:4px;margin-bottom:16px;transition:all .3s;}
+.back-btn:hover{background:var(--green);color:var(--bg);}
 
-        /* QUIZ ENGINE */
-        .quiz-box { display: none; }
-        .quiz-box.active { display: block; animation: fadeIn 0.5s; }
-        .ans-btn {
-            display: block; width: 100%; padding: 15px; margin: 10px 0;
-            background: rgba(0, 255, 65, 0.05); border: 1px solid var(--neon-green);
-            color: white; text-align: left; transition: 0.3s;
-        }
-        .ans-btn:hover { background: var(--neon-green); color: black; font-weight: bold; }
+/* FORMULA */
+.formula-box{font-family:'Share Tech Mono',monospace;font-size:1rem;color:var(--gold);background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25);padding:14px 18px;border-radius:6px;margin:8px 0;letter-spacing:1px;}
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* QUIZ */
+#quiz-area{max-width:700px;margin:0 auto;}
+.q-card{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:28px;margin-bottom:16px;}
+.q-text{font-family:'Orbitron',monospace;font-size:.9rem;color:var(--green);margin-bottom:20px;line-height:1.6;}
+.options{display:grid;gap:10px;}
+.opt-btn{font-family:'Rajdhani',sans-serif;font-size:.95rem;padding:12px 18px;background:rgba(0,255,65,.05);border:1px solid var(--border);color:var(--text);cursor:pointer;border-radius:6px;text-align:left;transition:all .3s;}
+.opt-btn:hover{border-color:var(--green);color:var(--green);}
+.opt-btn.correct{background:rgba(0,255,65,.2);border-color:var(--green);color:var(--green);}
+.opt-btn.wrong{background:rgba(255,34,68,.2);border-color:var(--red);color:var(--red);}
+.q-progress{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--dim);margin-bottom:16px;letter-spacing:2px;}
+#quiz-result{display:none;text-align:center;padding:30px;}
+#quiz-result h2{font-family:'Orbitron',monospace;font-size:1.8rem;color:var(--gold);margin-bottom:10px;}
+#quiz-result p{font-size:1rem;color:var(--text);margin:6px 0;}
+.score-bar{width:100%;height:10px;background:rgba(0,255,65,.1);border-radius:5px;margin:16px 0;overflow:hidden;}
+.score-fill{height:100%;background:linear-gradient(90deg,var(--green2),var(--green));border-radius:5px;transition:width 1s ease;}
+.quiz-btn{font-family:'Share Tech Mono',monospace;font-size:.75rem;letter-spacing:2px;padding:12px 28px;border:1px solid var(--green);background:none;color:var(--green);cursor:pointer;border-radius:4px;margin:8px;transition:all .3s;}
+.quiz-btn:hover{background:var(--green);color:var(--bg);}
+#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;}
+#jumpscare{display:none;position:fixed;inset:0;background:rgba(180,0,0,.97);z-index:9998;justify-content:center;align-items:center;flex-direction:column;}
+#jumpscare h1{font-family:'Orbitron',monospace;font-size:clamp(2.5rem,8vw,6rem);color:#fff;text-shadow:0 0 30px red,0 0 60px red;animation:shake .1s infinite;}
+@keyframes shake{0%{transform:translate(-4px,4px);}25%{transform:translate(4px,-4px);}50%{transform:translate(-4px,-4px);}75%{transform:translate(4px,4px);}100%{transform:translate(-4px,4px);}}
 
-    </style>
-</head>
-<body>
-    <canvas id="render-surface"></canvas>
+/* CALCULATOR */
+#calc-wrap{max-width:360px;margin:0 auto;background:#000;border:2px solid var(--red);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(0,255,65,.3),0 0 80px rgba(255,34,68,.1);}
+#calc-screen{background:#001200;padding:16px 18px;text-align:right;}
+#calc-expr{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:rgba(0,255,65,.5);min-height:16px;word-break:break-all;}
+#calc-display{font-family:'Share Tech Mono',monospace;font-size:2rem;color:var(--green);text-shadow:0 0 10px var(--green);word-break:break-all;min-height:2.5rem;}
+.calc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(0,255,65,.1);}
+.calc-btn{font-family:'Share Tech Mono',monospace;font-size:.85rem;padding:16px 8px;background:#040f04;color:var(--green);border:none;cursor:pointer;transition:all .2s;text-align:center;}
+.calc-btn:hover{background:rgba(0,255,65,.18);box-shadow:0 0 10px rgba(0,255,65,.2);}
+.calc-btn.op{color:var(--gold);}
+.calc-btn.eq{background:rgba(0,200,40,.18);color:#fff;font-weight:700;}
+.calc-btn.cl{color:var(--red);}
+.calc-btn.fn{color:#00cfff;font-size:.72rem;}
 
-    <div class="omni-hud">
-        <h1 style="font-family: 'Orbitron'; letter-spacing: 15px; color: var(--neon-green);">LINUXXTRA</h1>
-        <div style="display: flex; gap: 30px; font-family: 'Fira Code'; color: var(--electric-blue);">
-            <div id="sys-clock">00:00:00</div>
-            <div id="bat-volts">BAT: --%</div>
-        </div>
-    </div>
+/* TERMINAL */
+#terminal-wrap{margin:20px;border:1px solid var(--green);border-radius:10px;overflow:hidden;background:rgba(0,8,0,.92);backdrop-filter:blur(20px);box-shadow:0 0 30px rgba(0,255,65,.15);}
+.term-header{background:rgba(0,255,65,.08);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.term-dot{width:12px;height:12px;border-radius:50%;}
+.term-body{padding:0;max-height:320px;overflow-y:auto;}
+#term-output{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--green);padding:16px;white-space:pre-wrap;word-break:break-all;line-height:1.7;}
+.term-input-row{display:flex;align-items:center;padding:8px 16px;border-top:1px solid var(--border);background:rgba(0,20,0,.5);}
+.term-prompt{font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--green2);white-space:nowrap;margin-right:8px;}
+#term-input{flex:1;font-family:'Share Tech Mono',monospace;font-size:.78rem;background:transparent;border:none;color:var(--green);outline:none;caret-color:var(--green);}
 
-    <div class="content-matrix">
-        <!-- TERMINAL UNIT -->
-        <div class="module-card" style="grid-column: span 2;">
-            <h2 style="color: var(--neon-green); margin-bottom: 15px;">[00] TERMUX_UBUNTU_CORE</h2>
-            <div class="terminal-container" id="terminal">
-                <div class="t-line">Welcome to LINUXXTRA v3.0 (Kernel: 6.8.0-ultra)</div>
-                <div class="t-line">Hardware: Samsung Tab S9 FE Detected.</div>
-                <div class="t-line">Type 'help' for commands or 'quiz' to start training.</div>
-                <div id="term-history"></div>
-                <div class="t-line">
-                    <span class="t-user">root@linuxxtra:~#</span>
-                    <input type="text" class="t-input" id="terminal-in" autofocus>
-                </div>
-            </div>
-        </div>
+/* LEARNING TRICKS */
+.trick-card{background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:14px;}
+.trick-card h3{font-family:'Orbitron',monospace;font-size:.85rem;color:var(--gold);margin-bottom:10px;letter-spacing:1px;}
+.trick-card p,.trick-card li{font-size:.9rem;line-height:1.8;color:var(--text);}
+.trick-card ul{padding-left:18px;}
 
-        <!-- RECURSIVE KNOWLEDGE CORE (Simulates 1000 pages) -->
-        <div class="module-card">
-            <h2 style="color: var(--neon-green);">[01] ACADEMY_DATABASE</h2>
-            <div id="knowledge-feed" style="height: 300px; overflow-y: auto; font-size: 0.95rem; line-height: 1.6;">
-                <p><b>PHASE 01: MATH MODULO</b><br>Probability density function $f(x) \geq 0$. Integration over range = 1.</p><br>
-                <p><b>PHASE 02: CYBERSECURITY</b><br>Encryption handshake analysis via `aircrack-ng`.</p>
-                <!-- Generated content will be injected here -->
-            </div>
-            <button class="ans-btn" onclick="generateMore()" style="text-align: center; margin-top: 15px;">GENERATE NEXT 50 PAGES</button>
-        </div>
+/* PREV PAPERS */
+.paper-card{background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all .3s;}
+.paper-card:hover{border-color:var(--gold);box-shadow:0 0 16px rgba(255,215,0,.15);}
+.paper-card h4{font-family:'Orbitron',monospace;font-size:.8rem;color:var(--gold);margin-bottom:8px;letter-spacing:1px;}
+.paper-card p{font-size:.85rem;color:var(--dim);}
+.paper-qs{display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px;}
+.paper-qs.show{display:block;}
+.pq{font-size:.85rem;color:var(--text);margin-bottom:6px;padding-left:12px;border-left:2px solid var(--green);}
 
-        <!-- NEURAL QUIZ -->
-        <div class="module-card">
-            <h2 style="color: var(--neon-green);">[02] NEURAL_QUIZ_LVL_MAX</h2>
-            <div id="quiz-area">
-                <div class="quiz-box active" id="lvl1">
-                    <p>What command displays your current user in Linux?</p>
-                    <button class="ans-btn" onclick="nextLvl('lvl1', 'lvl2')">A) whoami</button>
-                    <button class="ans-btn" onclick="alert('ERROR')">B) ls -la</button>
-                    <button class="ans-btn" onclick="alert('ERROR')">C) sudo apt update</button>
-                    <button class="ans-btn" onclick="alert('ERROR')">D) chmod 777</button>
-                </div>
-                <div class="quiz-box" id="lvl2">
-                    <p>In Grade 10 Math, what is the probability of a certain event?</p>
-                    <button class="ans-btn" onclick="alert('ERROR')">A) 0.5</button>
-                    <button class="ans-btn" onclick="alert('SUCCESS')">B) 1.0</button>
-                    <button class="ans-btn" onclick="alert('ERROR')">C) 0</button>
-                    <button class="ans-btn" onclick="alert('ERROR')">D) Infinite</button>
-                </div>
-            </div>
-        </div>
-    </div>
+/* FOOTER */
+footer{text-align:center;padding:30px;border-top:1px solid var(--border);margin-top:40px;font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--dim);letter-spacing:3px;}
 
-    <script>
-        // 1. 16K GPU RENDERER
-        const canvas = document.getElementById('render-surface');
-        const ctx = canvas.getContext('2d');
-        let w, h, particles = [];
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:#010801;}::-webkit-scrollbar-thumb{background:var(--green2);}
 
-        function init() {
-            w = window.innerWidth; h = window.innerHeight;
-            canvas.width = w; canvas.height = h;
-            particles = [];
-            for(let i=0; i<250; i++) particles.push({ x: Math.random()*w, y: Math.random()*h, s: Math.random()*2, o: Math.random() });
-        }
+@media(max-width:600px){
+.calc-btn{padding:12px 4px;font-size:.75rem;}
+h1.site-title{font-size:1.4rem;}
+.tab-btn{font-size:.65rem;padding:8px 12px;}
+}
+</style>
 
-        function draw() {
-            ctx.clearRect(0,0,w,h);
-            ctx.fillStyle = "rgba(0, 255, 65, 0.3)";
-            particles.forEach(p => {
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill();
-                p.y -= 0.5; if(p.y < 0) p.y = h;
-            });
-            requestAnimationFrame(draw);
-        }
+</head>  
+<body>  
+<canvas id="leaves-canvas"></canvas>  
+<canvas id="confetti-canvas"></canvas>  
+<div id="jumpscare"><h1>⚠ YOU ARE WRONG ⚠</h1><p style="color:#f88;font-family:'Share Tech Mono',monospace;font-size:1rem;margin-top:20px;">Think again. Try harder.</p></div>  
+<div id="app">  
+<header>  
+  <p class="made-by">// MADE BY LINUXXTRA aka ABDULLAH //</p>  
+  <h1 class="site-title">LINUXXTRA</h1>  
+  <p class="sub-title">IGCSE O-LEVEL MATHS MASTERY HUB — ULTRA EDITION</p>  
+</header>  <nav class="tabs">  
+  <button class="tab-btn active" onclick="showTab('chapters')">📘 CHAPTERS</button>  
+  <button class="tab-btn" onclick="showTab('formulas')">🧮 FORMULAS</button>  
+  <button class="tab-btn" onclick="showTab('quiz')">🧠 QUIZ</button>  
+  <button class="tab-btn" onclick="showTab('calc')">🔢 CALCULATOR</button>  
+  <button class="tab-btn" onclick="showTab('tricks')">🎯 TRICKS</button>  
+  <button class="tab-btn" onclick="showTab('papers')">📄 PAST PAPERS</button>  
+  <button class="tab-btn" onclick="showTab('terminal')">💻 TERMINAL</button>  
+</nav>  <!-- CHAPTERS -->  <div id="tab-chapters" class="panel active">  
+  <div id="chapter-list">  
+    <div class="card"><h2>📘 IGCSE/O-LEVEL CHAPTERS</h2><p style="color:var(--dim);font-size:.85rem;">Click a chapter to dive deep.</p></div>  
+    <div class="chapter-grid" id="ch-grid"></div>  
+  </div>  
+  <div id="chapter-detail" style="display:none;"></div>  
+</div>  <!-- FORMULAS -->  <div id="tab-formulas" class="panel"></div>  <!-- QUIZ -->  <div id="tab-quiz" class="panel">  
+  <div id="quiz-area">  
+    <div class="card" style="text-align:center;">  
+      <h2>🧠 QUIZ MODE</h2>  
+      <p style="color:var(--dim);margin:10px 0;">30 randomised questions. Score tracked. Results analysed.</p>  
+      <button class="quiz-btn" onclick="startQuiz()">START QUIZ</button>  
+    </div>  
+    <div id="quiz-body"></div>  
+    <div id="quiz-result">  
+      <h2 id="r-title"></h2>  
+      <p id="r-score"></p>  
+      <p id="r-pct"></p>  
+      <div class="score-bar"><div class="score-fill" id="r-bar" style="width:0%"></div></div>  
+      <p id="r-grade" style="font-size:1.1rem;margin-top:10px;"></p>  
+      <div id="r-weak" style="margin-top:16px;text-align:left;"></div>  
+      <button class="quiz-btn" onclick="startQuiz()">RETRY</button>  
+      <button class="quiz-btn" onclick="showTab('chapters')">STUDY</button>  
+    </div>  
+  </div>  
+</div>  <!-- CALCULATOR -->  <div id="tab-calc" class="panel">  
+  <div class="card" style="text-align:center;max-width:400px;margin:0 auto 20px;">  
+    <h2>🔢 SCIENTIFIC CALCULATOR</h2>  
+  </div>  
+  <div id="calc-wrap">  
+    <div id="calc-screen">  
+      <div id="calc-expr"></div>  
+      <div id="calc-display">0</div>  
+    </div>  
+    <div class="calc-grid" id="calc-grid"></div>  
+  </div>  
+</div>  <!-- TRICKS -->  <div id="tab-tricks" class="panel"></div>  <!-- PAST PAPERS -->  <div id="tab-papers" class="panel"></div>  <!-- TERMINAL -->  <div id="tab-terminal" class="panel" style="padding:10px 0;">  
+  <div class="card" style="text-align:center;"><h2>💻 KALI LINUX TERMINAL</h2><p style="color:var(--dim);font-size:.8rem;">Simulated Kali Linux environment. Type <code>help</code> to start.</p></div>  
+  <div id="terminal-wrap">  
+    <div class="term-header">  
+      <div class="term-dot" style="background:#ff5f56;"></div>  
+      <div class="term-dot" style="background:#ffbd2e;"></div>  
+      <div class="term-dot" style="background:#27c93f;"></div>  
+      <span style="font-family:'Share Tech Mono',monospace;font-size:.7rem;color:var(--dim);margin-left:10px;">root@kali-linuxxtra:~#</span>  
+    </div>  
+    <div class="term-body"><div id="term-output">Welcome to LINUXXTRA Kali Terminal v2.0  
+Type 'help' for available commands.  
+─────────────────────────────────────────  
+</div></div>  
+    <div class="term-input-row">  
+      <span class="term-prompt">root@kali:~# </span>  
+      <input id="term-input" autocomplete="off" spellcheck="false" onkeydown="termKey(event)" placeholder="type a command...">  
+    </div>  
+  </div>  
+</div>  
+</div><!-- end app -->  
+<footer>© 2025 LINUXXTRA — MADE BY ABDULLAH — ALL RIGHTS RESERVED — IGCSE MATHS MASTERY</footer>  <script>  
+// ═══════════════════════════════════════  
+// LEAVES ANIMATION  
+// ═══════════════════════════════════════  
+(function(){  
+  const c=document.getElementById('leaves-canvas');  
+  const ctx=c.getContext('2d');  
+  let W,H,leaves=[];  
+  const COLORS=['#b5a000','#8a7200','#d4b800','#a89500','#c9a400'];  
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}  
+  resize();window.addEventListener('resize',resize);  
+  function mkLeaf(){return{x:Math.random()*W,y:-30,r:Math.random()*7+4,vx:(Math.random()-.4)*.7,vy:Math.random()*.6+.3,rot:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.03,op:Math.random()*.45+.25,sw:Math.random()*1.2+.5};}  
+  for(let i=0;i<38;i++){const l=mkLeaf();l.y=Math.random()*H;leaves.push(l);}  
+  function draw(){  
+    ctx.clearRect(0,0,W,H);  
+    leaves.forEach(l=>{  
+      ctx.save();ctx.globalAlpha=l.op;ctx.translate(l.x,l.y);ctx.rotate(l.rot);  
+      ctx.beginPath();ctx.ellipse(0,0,l.r*l.sw,l.r,0,0,Math.PI*2);  
+      ctx.fillStyle=COLORS[Math.floor(Math.random()*COLORS.length)];ctx.fill();  
+      ctx.restore();  
+      l.x+=l.vx;l.y+=l.vy;l.rot+=l.vr;  
+      if(l.y>H+20){Object.assign(l,mkLeaf());}  
+    });  
+    requestAnimationFrame(draw);  
+  }  
+  draw();  
+})();  
+  
+// ═══════════════════════════════════════  
+// TABS  
+// ═══════════════════════════════════════  
+function showTab(id){  
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));  
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));  
+  document.getElementById('tab-'+id).classList.add('active');  
+  event.target.classList.add('active');  
+  if(id==='formulas')buildFormulas();  
+  if(id==='tricks')buildTricks();  
+  if(id==='papers')buildPapers();  
+}  
+  
+// ═══════════════════════════════════════  
+// CHAPTER DATA  
+// ═══════════════════════════════════════  
+const CHAPTERS=[  
+{n:1,title:"Numbers",emoji:"🔢",  
+ intro:"Numbers are the foundation of all mathematics. In IGCSE, you need to master different types: natural numbers (1,2,3…), integers (…-2,-1,0,1,2…), rational numbers (fractions/decimals), irrational numbers (π, √2), and real numbers. Understanding place value, rounding, estimation, significant figures, and standard form (scientific notation) is critical.",  
+ formulas:["Standard Form: a × 10ⁿ (1 ≤ a < 10)","Rounding: look at digit after the required place","HCF: product of common prime factors","LCM: product of all prime factors (highest powers)"],  
+ tricks:["For standard form: count decimal places moved","To find HCF/LCM: use prime factor tree","Sig figs: start counting from first non-zero digit","Estimation: round each number to 1 sig fig first"],  
+ examples:["Write 0.00045 in standard form: 4.5 × 10⁻⁴","Round 3.7842 to 3 sig figs: 3.78","HCF of 12 and 18: 12=2²×3, 18=2×3² → HCF=2×3=6","LCM of 4 and 6: 4=2², 6=2×3 → LCM=2²×3=12"],  
+ mistakes:["Confusing HCF with LCM","Counting sig figs from leading zeros","Forgetting to adjust the power in standard form"]},  
+{n:2,title:"Algebra",emoji:"📐",  
+ intro:"Algebra is the language of mathematics. You work with variables (letters representing unknown values), expressions, equations, inequalities, and sequences. You'll learn to simplify expressions, expand brackets, factorise, solve equations, and work with algebraic fractions. Mastering algebra unlocks almost every other topic.",  
+ formulas:["(a+b)² = a²+2ab+b²","(a-b)² = a²-2ab+b²","(a+b)(a-b) = a²-b²","Arithmetic sequence: aₙ = a+(n-1)d","Geometric sequence: aₙ = arⁿ⁻¹"],  
+ tricks:["FOIL for expanding brackets: First Outer Inner Last","For inequalities: flip sign when multiplying/dividing by negative","nth term: find difference first, then compare to times table","Factorising: always take out common factor first"],  
+ examples:["Expand (x+3)²=x²+6x+9","Factorise x²-9=(x+3)(x-3)","Solve 3x+7=22: 3x=15, x=5","Find nth term of 4,7,10,13: d=3, a=4 → 3n+1"],  
+ mistakes:["(a+b)² ≠ a²+b²","Forgetting to change inequality sign","Sign errors when expanding negative brackets"]},  
+{n:3,title:"Number 2 (Fractions & Percentages)",emoji:"🔣",  
+ intro:"This chapter covers fractions, decimals, percentages, ratio, proportion, and their real-life applications. You must be able to convert between all forms, calculate percentage increase/decrease, find original values after percentage changes, and work with compound interest. These skills appear in nearly every exam paper.",  
+ formulas:["% increase = (increase/original)×100","% decrease = (decrease/original)×100","Compound interest: A = P(1 + r/100)ⁿ","Simple interest: I = PRT/100","Reverse %: original = amount ÷ (1 ± %/100)"],  
+ tricks:["Multiplier for 15% increase = 1.15","Multiplier for 20% decrease = 0.80","For compound interest exponent = number of years","Finding original after 20% increase: divide by 1.2"],  
+ examples:["Price rises from $40 to $50: % increase = 10/40×100 = 25%","$500 at 3% compound for 2 years: 500×1.03² = $530.45","After 30% increase price is $91: original = 91÷1.3 = $70"],  
+ mistakes:["Using the new value as original in reverse %","Confusing simple and compound interest","Not converting % to decimal in formulas"]},  
+{n:4,title:"Trigonometry",emoji:"📐",  
+ intro:"Trigonometry studies relationships between angles and sides in triangles. IGCSE covers right-angled triangles using SOH-CAH-TOA, the sine rule and cosine rule for any triangle, angles of elevation and depression, bearings, and 3D trigonometry. It's one of the most frequently tested topics in both papers.",  
+ formulas:["SOH: sin θ = opposite/hypotenuse","CAH: cos θ = adjacent/hypotenuse","TOA: tan θ = opposite/adjacent","Sine Rule: a/sinA = b/sinB = c/sinC","Cosine Rule: a² = b²+c²-2bc·cosA","Area = ½ab sinC"],  
+ tricks:["SOH-CAH-TOA: Some Officers Have Curly Auburn Hair To Orange Apples","For bearings: always measure clockwise from North","Elevation: look UP, Depression: look DOWN","If two sides + included angle → Cosine Rule","If two angles + one side → Sine Rule"],  
+ examples:["Right triangle: opposite=6, hyp=10 → sinθ=0.6, θ=36.87°","Sine rule: a/sin30°=12/sin45° → a=8.49","Cosine rule: a²=7²+9²-2(7)(9)cos60°=81-63=√81=9... work out: a≈8.54"],  
+ mistakes:["Using sine rule when ambiguous case applies","Forgetting to use correct mode (degrees/radians)","Labelling sides incorrectly relative to angle"]},  
+{n:5,title:"Mensuration",emoji:"📏",  
+ intro:"Mensuration covers all formulas for areas, perimeters, surface areas and volumes of 2D and 3D shapes. You must know circles, sectors, triangles, quadrilaterals, cylinders, cones, spheres, and pyramids. Many exam questions combine shapes or require you to find missing dimensions given area or volume.",  
+ formulas:["Circle: A=πr², C=2πr","Sector: Area=θ/360×πr², Arc=θ/360×2πr","Cylinder: V=πr²h, SA=2πr²+2πrh","Cone: V=⅓πr²h, Slant l=√(r²+h²), SA=πrl+πr²","Sphere: V=4/3πr³, SA=4πr²","Pyramid: V=⅓×base area×h"],  
+ tricks:["π≈3.142 unless told otherwise","For composite shapes: split into simple shapes","When given SA, rearrange formula carefully","Write formula → substitute → calculate (show every step)"],  
+ examples:["Cylinder r=3,h=8: V=π×9×8=72π≈226.2cm³","Cone r=4,h=3: l=√(16+9)=5, SA=π×4×5+π×16=80.5cm²","Sector θ=72°,r=5: Area=72/360×π×25=15.71cm²"],  
+ mistakes:["Using diameter instead of radius","Forgetting to add base area in cone surface area","Mixing up volume and surface area formulas"]},  
+{n:6,title:"Algebra 2 (Quadratics)",emoji:"🔲",  
+ intro:"Quadratic equations are equations of the form ax²+bx+c=0. You need to solve them by factorisation, completing the square, and the quadratic formula. You'll also draw and interpret parabola graphs, find the vertex, axis of symmetry, and roots. Quadratics appear constantly in both Paper 1 and Paper 2.",  
+ formulas:["Quadratic formula: x = (-b ± √(b²-4ac)) / 2a","Discriminant: Δ = b²-4ac (Δ>0: 2 roots, Δ=0: 1 root, Δ<0: no real roots)","Completing the square: x²+bx = (x+b/2)²-(b/2)²","Vertex form: a(x-h)²+k, vertex=(h,k)"],  
+ tricks:["If product of two factors=0, one must be 0","Always rearrange to =0 before factorising","For the formula: write a,b,c first","Axis of symmetry: x = -b/2a"],  
+ examples:["x²-5x+6=0 → (x-2)(x-3)=0 → x=2 or x=3","2x²+3x-2=0: a=2,b=3,c=-2 → x=(-3±√(9+16))/4=(-3±5)/4 → x=0.5 or x=-2","Complete square: x²+6x+5=(x+3)²-4 → x=-3±2"],  
+ mistakes:["Sign errors in the formula (-b not b)","Not equating to zero first","Forgetting both + and − solutions"]},  
+{n:7,title:"Geometry",emoji:"📐",  
+ intro:"Geometry covers angle rules, polygons, circles, congruence, similarity, and geometric proofs. You need to know all circle theorems, properties of parallel lines (alternate, corresponding, co-interior angles), interior/exterior angles of polygons, and conditions for congruence (SSS, SAS, ASA, RHS). Many questions require multi-step reasoning.",  
+ formulas:["Sum of interior angles = (n-2)×180°","Each interior angle of regular polygon = (n-2)×180°/n","Each exterior angle = 360°/n","Alternate angles: equal (Z-angles)","Corresponding angles: equal (F-angles)","Co-interior angles: add to 180° (C-angles)"],  
+ tricks:["Circle theorem: angle at centre = 2× angle at circumference","Angle in semicircle = 90° always","Opposite angles in cyclic quadrilateral add to 180°","For similarity: find ratio of corresponding sides first"],  
+ examples:["Pentagon: (5-2)×180=540°, each=108°","Circle: angle at centre 80° → angle at circumference=40°","Alternate angles: if parallel lines, Z-shape angles are equal"],  
+ mistakes:["Confusing co-interior with alternate angles","Not stating the circle theorem name in proofs","Using SSA (not a valid congruence condition)"]},  
+{n:8,title:"Algebra 3 (Inequalities & Sequences)",emoji:"≤",  
+ intro:"This chapter covers linear and quadratic inequalities, solving and showing solutions on number lines, simultaneous equations (linear and quadratic), and sequences (arithmetic, geometric, and special patterns). Inequalities require careful attention to sign changes, while sequences need pattern recognition.",  
+ formulas:["Linear inequality: solve like equation, flip < when ×÷ by negative","Simultaneous: elimination or substitution","Arithmetic sum: Sₙ = n/2(2a+(n-1)d) or Sₙ = n/2(a+l)","Geometric sum: Sₙ = a(rⁿ-1)/(r-1)"],  
+ tricks:["Number line: open circle for strict (<,>), closed for ≤,≥","For simultaneous: make coefficients equal then add/subtract","To find where sequence intersects: set aₙ=bₙ","Always test a value in the solution range"],  
+ examples:["3x-2>7: 3x>9: x>3 (open circle at 3)","2x+y=7 and x-y=2: add→3x=9,x=3,y=1","Sum of first 10 terms: a=3,d=4 → S=10/2(6+36)=210"],  
+ mistakes:["Not flipping inequality when dividing by negative","Wrong direction of open/closed circles","Arithmetic errors in elimination method"]},  
+{n:9,title:"Graphs",emoji:"📊",  
+ intro:"Graphs cover straight lines (y=mx+c), gradients, distance-time and speed-time graphs, quadratic/cubic/reciprocal curves, exponential graphs, and transformations of graphs. You must be able to draw, read, and interpret all types. Gradient of distance-time = speed; gradient of speed-time = acceleration; area under speed-time = distance.",  
+ formulas:["y = mx + c (gradient m, y-intercept c)","Gradient = (y₂-y₁)/(x₂-x₁)","Parallel lines: same gradient","Perpendicular: m₁×m₂ = -1","Area under speed-time graph = distance"],  
+ tricks:["Gradient: rise over run (count squares)","Negative gradient = line goes downward left to right","For curve gradients: draw tangent at the point","Midpoint: ((x₁+x₂)/2, (y₁+y₂)/2)"],  
+ examples:["Find gradient: (0,1) to (4,9) → (9-1)/(4-0) = 2","y=2x+3 and y=2x-5: parallel (same m=2)","Perpendicular to gradient 3: m = -1/3"],  
+ mistakes:["Swapping x and y in gradient formula","Forgetting area under graph formula for distance","Misreading graph scales"]},  
+{n:10,title:"Trigonometry 2",emoji:"🌊",  
+ intro:"Advanced trigonometry covers the unit circle, graphs of sin/cos/tan, solving trig equations over given ranges, and the exact values of sin/cos/tan for 0°,30°,45°,60°,90°. You also apply sine and cosine rules to find areas of non-right-angled triangles and solve 3D problems.",  
+ formulas:["sin²θ + cos²θ = 1","tan θ = sin θ / cos θ","Exact: sin30°=½, cos30°=√3/2, tan30°=1/√3","sin45°=cos45°=1/√2, tan45°=1","sin60°=√3/2, cos60°=½, tan60°=√3"],  
+ tricks:["CAST diagram: All Sine Tangent Cosine (which is positive per quadrant)","For multiple solutions: find principal value then use symmetry","Sine graph: period 360°, max 1, min -1","Cosine graph: starts at 1, period 360°"],  
+ examples:["Solve sin x=0.5 for 0≤x≤360: x=30° or x=150°","Solve cos x=-√3/2: x=150° or x=210°","Exact value: tan²60°-sin²30°=3-0.25=2.75"],  
+ mistakes:["Forgetting second solution in trig equations","CAST diagram direction errors","Using calculator when exact values required"]},  
+{n:11,title:"Sets & Functions",emoji:"∩",  
+ intro:"Sets use Venn diagrams to show relationships between groups. Functions map inputs to outputs using notation f(x). You'll learn union (A∪B), intersection (A∩B), complement (A'), domain, range, composite functions (fg(x)), and inverse functions (f⁻¹). Functions are essential for understanding graphs and algebraic relationships.",  
+ formulas:["n(A∪B) = n(A)+n(B)-n(A∩B)","Composite: fg(x) = f(g(x))","Inverse: swap x and y, rearrange for y","Domain: set of inputs; Range: set of outputs"],  
+ tricks:["For Venn: fill intersection first, then work outward","Composite: apply right function first","For inverse: replace f(x) with y, swap x↔y, solve for y","Draw Venn diagram even if not asked"],  
+ examples:["A={1,2,3,4}, B={3,4,5,6}: A∩B={3,4}, A∪B={1,2,3,4,5,6}","f(x)=2x+3, g(x)=x²: fg(x)=2x²+3","f(x)=3x-1: y=3x-1→x=(y+1)/3→f⁻¹(x)=(x+1)/3"],  
+ mistakes:["Applying composite in wrong order","Confusing domain and range","Forgetting to check if inverse is valid (one-to-one)"]},  
+{n:12,title:"Vectors & Transformations",emoji:"↗",  
+ intro:"Vectors represent quantities with both magnitude and direction. You'll add, subtract vectors, multiply by scalars, find magnitudes, and use position vectors. Transformations include rotation, reflection, translation, and enlargement. You need to describe each transformation completely and perform them on coordinate grids.",  
+ formulas:["|v| = √(x²+y²) for vector v=(x,y)","Midpoint M = ½(a+b)","Enlargement: scale factor = image length / original length","Area scale factor = (linear scale factor)²"],  
+ tricks:["Vector route: break journey into known vectors","For transformation description: always give centre, scale, angle, or mirror line","Negative scale factor: enlargement with rotation 180°","To find centre of enlargement: draw lines through corresponding points"],  
+ examples:["Vector a=(3,4): |a|=√(9+16)=5","Enlargement SF=3: every coordinate×3 from centre","AB⃗ = b-a where a,b are position vectors"],  
+ mistakes:["Not stating centre in transformation descriptions","Forgetting direction in rotation (CW vs CCW)","SF confusion: SF=2 means image is twice the size, not twice the distance"]},  
+{n:13,title:"Statistics",emoji:"📊",  
+ intro:"Statistics involves collecting, organising, and interpreting data. Topics include mean, median, mode, range, frequency tables, grouped data, histograms (frequency density), cumulative frequency graphs, box plots, and scatter diagrams with lines of best fit. For grouped data you use midpoints to estimate the mean.",  
+ formulas:["Mean = Σfx / Σf","Median: middle value (or average of 2 middle)","IQR = Q3 - Q1","Frequency density = frequency / class width","Correlation: positive/negative/none"],  
+ tricks:["For grouped data: use midpoint of each class","Cumulative frequency: reading off: median at n/2, Q1 at n/4, Q3 at 3n/4","Histogram: area of bar = frequency (not height)","Line of best fit must pass through mean point (x̄, ȳ)"],  
+ examples:["Data: 2,3,3,5,7: Mean=(2+3+3+5+7)/5=4, Median=3, Mode=3","Grouped: class 10-20, f=5, midpoint=15: fx=75","Histogram: class 0-5 (width=5), frequency=10: freq density=2"],  
+ mistakes:["Using class boundaries not midpoints for mean","Reading median from wrong cumulative frequency value","Drawing histogram with frequency on y-axis instead of frequency density"]},  
+{n:14,title:"Probability",emoji:"🎲",  
+ intro:"Probability measures how likely events are, from 0 (impossible) to 1 (certain). IGCSE covers basic probability, combined events, tree diagrams, Venn diagrams, conditional probability, and mutually exclusive/independent events. You must be able to calculate P(A and B), P(A or B), and P(A|B).",  
+ formulas:["P(event) = favourable outcomes / total outcomes","P(A∪B) = P(A)+P(B)-P(A∩B)","P(A and B) = P(A)×P(B) [if independent]","P(A|B) = P(A∩B)/P(B) [conditional]","P(not A) = 1-P(A)"],  
+ tricks:["Tree diagram: multiply along branches, add between branches","Mutually exclusive: P(A∩B)=0, so P(A∪B)=P(A)+P(B)","Without replacement: denominator decreases each pick","Always check probabilities sum to 1"],  
+ examples:["P(red from 3R,5B)=3/8","P(2 reds without replacement)=3/8×2/7=6/56=3/28","P(A)=0.4,P(B)=0.3,P(A∩B)=0.1: P(A∪B)=0.6"],  
+ mistakes:["Adding instead of multiplying for AND events","Not adjusting denominator when drawing without replacement","Confusing independent and mutually exclusive events"]}  
+];  
+  
+// Build chapter grid  
+(function(){  
+  const grid=document.getElementById('ch-grid');  
+  CHAPTERS.forEach(ch=>{  
+    const b=document.createElement('button');  
+    b.className='ch-btn';  
+    b.innerHTML=`<span class="ch-num">${ch.emoji}</span><strong>${ch.n}. ${ch.title}</strong>`;  
+    b.onclick=()=>showChapter(ch.n-1);  
+    grid.appendChild(b);  
+  });  
+})();  
+  
+function showChapter(i){  
+  const ch=CHAPTERS[i];  
+  document.getElementById('chapter-list').style.display='none';  
+  const det=document.getElementById('chapter-detail');  
+  det.style.display='block';  
+  det.innerHTML=`  
+    <button class="back-btn" onclick="hideChapter()">← BACK TO CHAPTERS</button>  
+    <div class="card">  
+      <div class="tag">CHAPTER ${ch.n}</div>  
+      <h2>${ch.emoji} ${ch.title}</h2>  
+      <p>${ch.intro}</p>  
+      <h3>📐 KEY FORMULAS</h3>  
+      ${ch.formulas.map(f=>`<div class="formula-box">${f}</div>`).join('')}  
+      <h3>🎯 TRICKS & SHORTCUTS</h3>  
+      <div class="trick-box">${ch.tricks.map(t=>`<p>✦ ${t}</p>`).join('')}</div>  
+      <h3>📝 WORKED EXAMPLES</h3>  
+      <div class="example-box">${ch.examples.map(e=>`<p>▶ ${e}</p>`).join('')}</div>  
+      <h3>⚠ COMMON MISTAKES</h3>  
+      <div class="mistake-box">${ch.mistakes.map(m=>`<p>✖ ${m}</p>`).join('')}</div>  
+    </div>`;  
+}  
+function hideChapter(){  
+  document.getElementById('chapter-list').style.display='block';  
+  document.getElementById('chapter-detail').style.display='none';  
+}  
+  
+// ═══════════════════════════════════════  
+// FORMULAS PANEL  
+// ═══════════════════════════════════════  
+function buildFormulas(){  
+  const p=document.getElementById('tab-formulas');  
+  if(p.innerHTML.trim())return;  
+  const cats=[  
+    {t:"Algebra & Numbers",fs:["a²-b²=(a+b)(a-b)","(a±b)²=a²±2ab+b²","Quadratic: x=(-b±√(b²-4ac))/2a","nth term AP: a+(n-1)d","Sum AP: n/2(2a+(n-1)d)","nth term GP: arⁿ⁻¹","Sum GP: a(rⁿ-1)/(r-1)","Standard form: a×10ⁿ, 1≤a<10"]},  
+    {t:"Geometry & Trigonometry",fs:["Interior angles sum=(n-2)×180°","sin θ=O/H, cos θ=A/H, tan θ=O/A","Sine rule: a/sinA=b/sinB=c/sinC","Cosine rule: a²=b²+c²-2bc cosA","Area=½ab sinC","sin²θ+cos²θ=1"]},  
+    {t:"Mensuration",fs:["Circle: A=πr², C=2πr","Sector: A=(θ/360)πr²","Cylinder: V=πr²h, SA=2πr²+2πrh","Cone: V=⅓πr²h, SA=πrl+πr²","Sphere: V=(4/3)πr³, SA=4πr²","Pyramid: V=⅓×base×h","Trapezium: A=½(a+b)h"]},  
+    {t:"Statistics & Probability",fs:["Mean=Σfx/Σf","IQR=Q3-Q1","Freq density=freq/class width","P(A)=favourable/total","P(not A)=1-P(A)","P(A or B)=P(A)+P(B)-P(A∩B)","P(A and B)=P(A)×P(B) [independent]","Compound interest: A=P(1+r/100)ⁿ"]}  
+  ];  
+  p.innerHTML=cats.map(c=>`<div class="card"><h2>${c.t}</h2>${c.fs.map(f=>`<div class="formula-box">${f}</div>`).join('')}</div>`).join('');  
+}  
+  
+// ═══════════════════════════════════════  
+// QUIZ SYSTEM  
+// ═══════════════════════════════════════  
+const ALL_QS=[  
+  {q:"What is 3.7×10³ in standard form written out?",o:["3700","370","37","37000"],a:0,t:"Numbers"},  
+  {q:"Expand and simplify (x+4)²",o:["x²+8x+16","x²+16","x²+4x+16","x²+8x+8"],a:0,t:"Algebra"},  
+  {q:"Factorise x²-9",o:["(x-3)(x+3)","(x-9)(x+1)","(x+3)²","(x-3)²"],a:0,t:"Algebra"},  
+  {q:"sin 30° equals",o:["½","√3/2","1/√2","1"],a:0,t:"Trigonometry"},  
+  {q:"cos 60° equals",o:["½","√3/2","1","0"],a:0,t:"Trigonometry"},  
+  {q:"Area of circle with radius 5 cm (use π=3.14)",o:["78.5 cm²","31.4 cm²","25 cm²","15.7 cm²"],a:0,t:"Mensuration"},  
+  {q:"Volume of cylinder r=3, h=4 (leave in terms of π)",o:["36π","12π","48π","24π"],a:0,t:"Mensuration"},  
+  {q:"Solve: 2x+5=13",o:["x=4","x=3","x=9","x=5"],a:0,t:"Algebra"},  
+  {q:"The gradient of y=3x-7 is",o:["3","−7","7","−3"],a:0,t:"Graphs"},  
+  {q:"P(rolling a 6 on a die) =",o:["1/6","1/3","1/2","1"],a:0,t:"Probability"},  
+  {q:"The median of 3,5,7,9,11 is",o:["7","5","9","6"],a:0,t:"Statistics"},  
+  {q:"What is the HCF of 12 and 18?",o:["6","12","36","3"],a:0,t:"Numbers"},  
+  {q:"Solve x²-5x+6=0",o:["x=2 or x=3","x=5 or x=6","x=−2 or x=−3","x=1 or x=6"],a:0,t:"Quadratics"},  
+  {q:"tan 45° equals",o:["1","0","√3","1/√3"],a:0,t:"Trigonometry"},  
+  {q:"Sum of interior angles of a hexagon",o:["720°","540°","900°","360°"],a:0,t:"Geometry"},  
+  {q:"If P(A)=0.3 and P(B)=0.5 (independent), P(A and B)=",o:["0.15","0.8","0.2","0.35"],a:0,t:"Probability"},  
+  {q:"y=2x+c passes through (3,7). Find c.",o:["1","7","13","−1"],a:0,t:"Graphs"},  
+  {q:"Surface area of sphere with r=3 (leave in π)",o:["36π","12π","9π","27π"],a:0,t:"Mensuration"},  
+  {q:"The discriminant of x²-4x+4 is",o:["0","−4","4","8"],a:0,t:"Quadratics"},  
+  {q:"A price increases from $80 to $100. % increase =",o:["25%","20%","15%","30%"],a:0,t:"Percentages"},  
+  {q:"f(x)=2x+1, g(x)=x². Find fg(3).",o:["19","13","7","25"],a:0,t:"Functions"},  
+  {q:"Vector a=(3,4). |a|=",o:["5","7","3.5","√7"],a:0,t:"Vectors"},  
+  {q:"Angle in a semicircle equals",o:["90°","180°","45°","60°"],a:0,t:"Geometry"},  
+  {q:"Compound interest: £500 at 4% for 2 years =",o:["£540.80","£540","£541","£539.20"],a:0,t:"Percentages"},  
+  {q:"In a frequency table, mean = Σfx ÷",o:["Σf","n","Σx","f"],a:0,t:"Statistics"},  
+  {q:"Solve 2x²+x-3=0 by factorising",o:["x=1 or x=−3/2","x=−1 or x=3","x=2 or x=−1","x=3 or x=−1"],a:0,t:"Quadratics"},  
+  {q:"If n(A)=8, n(B)=6, n(A∩B)=3, find n(A∪B)",o:["11","14","9","17"],a:0,t:"Sets"},  
+  {q:"Which is the correct cosine rule?",o:["a²=b²+c²−2bc cosA","a²=b²+c²+2bc cosA","a=b+c−2cosA","a²=b+c−2bc cosA"],a:0,t:"Trigonometry"},  
+  {q:"nth term of sequence: 5,8,11,14,...",o:["3n+2","5n","n+3","2n+5"],a:0,t:"Algebra"},  
+  {q:"The IQR equals",o:["Q3−Q1","Q1−Q3","Q2−Q1","Max−Min"],a:0,t:"Statistics"}  
+];  
+  
+let qOrder=[],qIdx=0,score=0,weakMap={};  
+  
+function startQuiz(){  
+  qOrder=[...ALL_QS].sort(()=>Math.random()-.5);  
+  qIdx=0;score=0;weakMap={};  
+  document.getElementById('quiz-result').style.display='none';  
+  renderQ();  
+}  
+  
+function renderQ(){  
+  const body=document.getElementById('quiz-body');
+  if(qIdx>=qOrder.length){showResult();return;}
+  const q=qOrder[qIdx];
+  const opts=[...q.o].map((o,i)=>({o,i})).sort(()=>Math.random()-.5);
+  const correctShuffledIdx=opts.findIndex(x=>x.i===q.a);
+  body.innerHTML=`
+    <div class="q-card">
+      <div class="q-progress">Q${qIdx+1} / ${qOrder.length} — Score: ${score}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="opts">
+        ${opts.map((x,i)=>`<button class="opt-btn" onclick="checkAns(${i},${correctShuffledIdx},'${q.t}')">${x.o}</button>`).join('')}
+      </div>
+    </div>`;
+}
 
-        // 2. TERMINAL LOGIC
-        const termInput = document.getElementById('terminal-in');
-        const termHistory = document.getElementById('term-history');
-        termInput.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                const cmd = termInput.value.toLowerCase();
-                termHistory.innerHTML += `<div><span class="t-user">root@linuxxtra:~#</span> ${cmd}</div>`;
-                if(cmd === 'ls') termHistory.innerHTML += `<div>bin/ etc/ root/ home/ tmp/ var/</div>`;
-                else if(cmd === 'whoami') termHistory.innerHTML += `<div>abdullah_admin</div>`;
-                else if(cmd === 'clear') termHistory.innerHTML = '';
-                else termHistory.innerHTML += `<div>System: Command '${cmd}' executed in background.</div>`;
-                termInput.value = '';
-                document.getElementById('terminal').scrollTop = 9999;
-            }
-        });
+function checkAns(selected,correct,topic){
+  const btns=document.querySelectorAll('.opt-btn');
+  btns.forEach(b=>b.onclick=null);
+  if(selected===correct){
+    btns[selected].classList.add('correct');
+    score++;
+    spawnConfetti();
+  } else {
+    btns[selected].classList.add('wrong');
+    btns[correct].classList.add('correct');
+    weakMap[topic]=(weakMap[topic]||0)+1;
+    doJumpscare();
+  }
+  qIdx++;
+  setTimeout(renderQ,1200);
+}
 
-        // 3. 1000-PAGE GENERATOR
-        let pageCount = 1;
-        function generateMore() {
-            const feed = document.getElementById('knowledge-feed');
-            for(let i=0; i<10; i++) {
-                pageCount++;
-                feed.innerHTML += `<p style="margin-top:20px;"><b>MODULE ${pageCount}:</b> Linux Command Line Advanced Optimization. Usage of 'sed' and 'awk' for pattern matching in log files.</p>`;
-            }
-            feed.scrollTop = feed.scrollHeight;
-        }
+function showResult(){
+  document.getElementById('quiz-body').innerHTML='';
+  const res=document.getElementById('quiz-result');
+  res.style.display='block';
+  const pct=Math.round(score/qOrder.length*100);
+  const grade=pct>=90?'A* — OUTSTANDING 🏆':pct>=80?'A — EXCELLENT ⭐':pct>=70?'B — GOOD 👍':pct>=60?'C — AVERAGE 📖':pct>=50?'D — NEEDS WORK 📚':'F — MUST REVISE ❌';
+  document.getElementById('r-title').textContent='QUIZ COMPLETE';
+  document.getElementById('r-score').textContent=`Score: ${score} / ${qOrder.length}`;
+  document.getElementById('r-pct').textContent=`Percentage: ${pct}%`;
+  document.getElementById('r-grade').textContent=grade;
+  setTimeout(()=>document.getElementById('r-bar').style.width=pct+'%',100);
+  const weak=Object.keys(weakMap);
+  document.getElementById('r-weak').innerHTML=weak.length?`<div class="mistake-box"><p><strong>Revise these topics:</strong></p>${weak.map(t=>`<p>✖ ${t} (${weakMap[t]} mistakes)</p>`).join('')}</div>`:`<div class="trick-box"><p>✦ No weak topics detected. Excellent work!</p></div>`;
+  localStorage.setItem('lx_score',score);localStorage.setItem('lx_pct',pct);
+}
 
-        // 4. HUD UPDATES
-        setInterval(() => {
-            document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString();
-            navigator.getBattery().then(b => {
-                document.getElementById('bat-volts').innerText = `BAT: ${Math.round(b.level*100)}% ${b.charging ? '⚡' : '🔋'}`;
-            });
-        }, 1000);
+// Confetti
+function spawnConfetti(){
+  const c=document.getElementById('confetti-canvas');
+  const ctx=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  const bits=[];
+  for(let i=0;i<80;i++)bits.push({x:Math.random()*c.width,y:-10,r:Math.random()*5+3,color:`hsl(${Math.random()*360},90%,60%)`,vx:(Math.random()-0.5)*4,vy:Math.random()*4+2,rot:Math.random()*360,vr:(Math.random()-0.5)*8});
+  let frames=0;
+  function drawC(){
+    ctx.clearRect(0,0,c.width,c.height);
+    bits.forEach(b=>{
+      ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.rot*Math.PI/180);
+      ctx.fillStyle=b.color;ctx.fillRect(-b.r,-b.r/2,b.r*2,b.r);
+      ctx.restore();
+      b.x+=b.vx;b.y+=b.vy;b.rot+=b.vr;b.vy+=0.05;
+    });
+    frames++;
+    if(frames<90)requestAnimationFrame(drawC);
+    else ctx.clearRect(0,0,c.width,c.height);
+  }
+  drawC();
+}
 
-        function nextLvl(curr, next) {
-            document.getElementById(curr).classList.remove('active');
-            document.getElementById(next).classList.add('active');
-        }
+// Jumpscare
+function doJumpscare(){
+  const j=document.getElementById('jumpscare');
+  j.style.display='flex';
+  // Sound via AudioContext
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ac.createOscillator();const g=ac.createGain();
+    osc.connect(g);g.connect(ac.destination);
+    osc.type='sawtooth';osc.frequency.setValueAtTime(80,ac.currentTime);
+    g.gain.setValueAtTime(0.4,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.6);
+    osc.start();osc.stop(ac.currentTime+0.6);
+  }catch(e){}
+  setTimeout(()=>{j.style.display='none';},900);
+}
 
-        window.addEventListener('resize', init);
-        init(); draw();
-    </script>
+// ═══════════════════════════════════════
+// CALCULATOR
+// ═══════════════════════════════════════
+const calcBtns=[
+  ['sin','cos','tan','π','C'],
+  ['7','8','9','÷','('],
+  ['4','5','6','×',')'],
+  ['1','2','3','−','^'],
+  ['0','.','√','%','=']
+];
+(function(){
+  const g=document.getElementById('calc-grid');
+  calcBtns.forEach(row=>row.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='calc-btn'+(k==='='?' eq':k==='C'?' cl':/[÷×−]/.test(k)||k==='^'?' op':/sin|cos|tan|√|π/.test(k)?' fn':'');
+    b.textContent=k;b.onclick=()=>calcPress(k);
+    g.appendChild(b);
+  }));
+})();
+
+let calcExpr='',calcRes='0';
+function calcPress(k){
+  const disp=document.getElementById('calc-display');
+  const expr=document.getElementById('calc-expr');
+  if(k==='C'){calcExpr='';calcRes='0';disp.textContent='0';expr.textContent='';return;}
+  if(k==='='){
+    try{
+      let e=calcExpr.replace(/÷/g,'/').replace(/×/g,'*').replace(/−/g,'-').replace(/π/g,'Math.PI').replace(/\^/g,'**');
+      e=e.replace(/sin\(/g,'Math.sin((Math.PI/180)*').replace(/cos\(/g,'Math.cos((Math.PI/180)*').replace(/tan\(/g,'Math.tan((Math.PI/180)*');
+      e=e.replace(/√\(/g,'Math.sqrt(');
+      let res=Function('"use strict";return ('+e+')')();
+      res=Math.round(res*1e10)/1e10;
+      expr.textContent=calcExpr+'=';calcRes=String(res);disp.textContent=calcRes;calcExpr=String(res);
+    }catch(err){disp.textContent='ERR';calcExpr='';}
+    return;
+  }
+  if(k==='√'){calcExpr+='√(';}
+  else if(/sin|cos|tan/.test(k)){calcExpr+=k+'(';}
+  else{calcExpr+=k;}
+  disp.textContent=calcExpr;expr.textContent='';
+}
+
+// ═══════════════════════════════════════
+// TRICKS PANEL
+// ═══════════════════════════════════════
+function buildTricks(){
+  const p=document.getElementById('tab-tricks');
+  if(p.innerHTML.trim())return;
+  const tricks=[
+    {t:"⚡ Mental Maths Speed",items:["Multiply by 11: 23×11=253 (put middle digit = sum of outer: 2+3=5)","Squares ending in 5: 25²=625 (take 2, multiply by 3, add 25: 2×3=6, result=625)","Multiply by 9: finger trick — fold the nth finger, left=tens, right=units","Percentage of number: 15% of 60 = 10%(6) + 5%(3) = 9","Divide by 5: multiply by 2 then divide by 10"]},
+    {t:"📝 Exam Shortcuts",items:["Always show working — method marks are given even if answer wrong","Write formula before substituting","Label every diagram you draw","Check units match (cm², m³, etc.)","Leave answers in terms of π unless told to calculate","If stuck: read question again, underline key words"]},
+    {t:"🧠 Memory Tricks",items:["SOH-CAH-TOA: 'Some Old Hags Can Always Hear Their Old Age'","BODMAS: Brackets, Order, Division, Multiplication, Addition, Subtraction","FOIL: First Outer Inner Last (expanding brackets)","SOHCAHTOA for 3D: draw 2D triangle first then identify angle","Circle theorems: angle at centre = TWICE circumference angle (remember: Centre = Champion = 2× bigger)","Probability tree: MULTIPLY branches, ADD outcomes"]},
+    {t:"🎯 Exam Day Tips",items:["Attempt every question — partial marks count","If answer looks too messy, re-check your algebra","Use your calculator for checking — but show algebra working","For geometry proofs: state every theorem you use by name","Highlight what is being asked in worded problems","Check your answer makes sense in context (negative length? impossible!)"]},
+    {t:"📊 Quick Formula Recall",items:["Area formulas: think COVER (what covers the shape?)","Volume formulas: think FILL (what fills the shape?)","Perimeter: always add all OUTER edges","Always re-read question at end to make sure you answered what was asked"]}
+  ];
+  p.innerHTML=`<div class="card"><h2>🎯 LEARNING TRICKS & EXAM MASTERY</h2></div>`+tricks.map(t=>`<div class="trick-card"><h3>${t.t}</h3><ul>${t.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// PAST PAPERS
+// ═══════════════════════════════════════
+function buildPapers(){
+  const p=document.getElementById('tab-papers');
+  if(p.innerHTML.trim())return;
+  const papers=[
+    {y:"2023 Paper 1",qs:["1. Write 0.00045 in standard form. [1]","2. Factorise x²+5x+6. [2]","3. A circle has area 50.24cm². Find its radius (π=3.14). [2]","4. Solve 3x−4=11. [2]","5. Find the nth term of 2,5,8,11,... [2]","6. A bag has 4R,6B balls. P(Red)=? [1]","7. Expand (2x+3)². [2]","8. Triangle: hyp=13,adj=5, find sinθ. [2]","9. Volume of cone: r=3,h=4. (leave in π) [2]","10. Find IQR of: 3,5,7,9,11,13,15. [2]"]},
+    {y:"2022 Paper 2",qs:["1. Simplify 3x²×2x³. [1]","2. Solve x²−7x+12=0. [2]","3. A price drops 15% to £85. Find original. [3]","4. Find missing angle in triangle with sides 5,7 and included 60°. [3]","5. Draw cumulative frequency graph for given table. [4]","6. Prove angle in semicircle is 90°. [2]","7. f(x)=3x+2. Find f⁻¹(x). [2]","8. Two vectors a=(2,1),b=(−1,3). Find |a+b|. [3]","9. P(A)=0.4,P(B)=0.5 independent. P(A and B)=? [2]","10. Histogram: class 20-30, freq density=1.5. Find frequency. [2]"]},
+    {y:"2021 Paper 1",qs:["1. Write 3.6×10⁻² as a decimal. [1]","2. Expand and simplify (x−3)(x+5). [2]","3. Area of sector: θ=90°,r=4. [2]","4. Solve 2x+3y=12 and x−y=1 simultaneously. [3]","5. In triangle ABC, sinA/a=sinB/b. A=40°,a=6,b=9, find B. [3]","6. Sketch y=x²−4x+3. Label roots. [3]","7. A car travels 60km at 40km/h then 40km at 80km/h. Find average speed. [3]","8. Box plot: Min=10,Q1=20,Median=30,Q3=40,Max=50. Find IQR. [1]","9. Probability of at least one head in 2 coin flips. [2]","10. Enlargement SF=2, centre (1,1). New coords of (3,2)? [2]"]},
+    {y:"2020 Paper 2",qs:["1. HCF and LCM of 24 and 36. [2]","2. Solve 4x²−1=0. [2]","3. Compound interest: £800 at 3.5% for 3 years. [3]","4. tan x = √3. Solve for 0≤x≤360°. [2]","5. Surface area of cylinder r=2,h=5. [3]","6. Find equation of line through (0,3) and (4,11). [2]","7. Venn: n(A)=7,n(B)=9,n(A∩B)=3. Find n(A∪B). [1]","8. nth term of geometric sequence 2,6,18,54. [2]","9. Translation by vector (3,−2). New coords of (1,5)? [1]","10. Factorise completely: 2x²−8. [2]"]},
+    {y:"2019 Paper 1",qs:["1. Round 4.7856 to 3 significant figures. [1]","2. Solve 5−2x<9. [2]","3. Area of trapezium: parallel sides 6 and 10, height 4. [2]","4. Find gradient and y-intercept of 3y=6x+9. [2]","5. P(scoring >4 on a die)=? [1]","6. Simplify (3x²y³)/(xy). [2]","7. Complete square for x²+8x+5. [2]","8. Angle at centre=140°. Angle at circumference=? [1]","9. Mode and median of: 3,3,5,6,6,6,7,8. [2]","10. Two similar triangles: sides 4,6 and 6,9. Scale factor? [1]"]},
+    {y:"2018 Paper 2",qs:["1. Write 45,000,000 in standard form. [1]","2. Factorise 6x²+x−2. [2]","3. A map scale 1:25000. 4cm on map = ? km in real life. [2]","4. Cosine rule: a=8,b=5,c=6. Find angle A. [3]","5. Draw and label unit circle showing sin60°, cos60°. [2]","6. Volume of sphere r=6. Leave in π. [2]","7. Equation of perpendicular to y=2x+1 through (4,3). [3]","8. P(boy)=0.6. 3 children. P(all boys)=? [2]","9. Position vector OP=(4,1), OQ=(1,5). Find PQ⃗. [2]","10. Arithmetic sequence: sum of first 20 terms, a=3,d=4. [2]"]},
+    {y:"2017 Paper 1",qs:["1. Convert 3/8 to decimal and percentage. [2]","2. Solve x²−3x=0. [2]","3. Frequency density of class 40-50 if frequency=20. [1]","4. Exterior angle of regular octagon. [1]","5. f(x)=x²+1, g(x)=2x. Find gf(3). [2]","6. Prove algebraically that sum of two odd numbers is even. [2]","7. Plot y=sinx for 0°≤x≤360°. Label max/min. [3]","8. Vector: a=(−1,4). Find 3a. [1]","9. Two events mutually exclusive: P(A)=0.3,P(B)=0.25. P(A or B)=? [1]","10. Volume of pyramid: square base 6cm, height 8cm. [2]"]},
+    {y:"2016 Paper 2",qs:["1. Simplify 4⁻²×4⁵. [1]","2. Solve 3(2x−1)=2(x+5). [3]","3. % decrease: £250 to £190. [2]","4. In a circle, chord AB, angle AXB=75° (X on major arc). Find angle AOB (O=centre). [2]","5. Reflect triangle in y=x. State new coordinates. [2]","6. S.A. of cone: r=5, slant=13. [2]","7. Find range of f(x)=1/x for domain x>0. [1]","8. Cumulative frequency: 40 students. Find median and IQR from graph. [3]","9. P(selecting vowel from MATHEMATICS)=? [2]","10. nth term: −4,−1,2,5,8. [2]"]},
+    {y:"2015 Paper 1",qs:["1. LCM of 8 and 12. [1]","2. Expand and simplify (3x−2)²−(x+1)². [3]","3. Simple interest: £400 at 5% for 3 years. [2]","4. Angle of elevation to top of 20m tower from 15m away. [2]","5. Draw Venn for A={1,3,5,7}, B={2,3,5,6,7}. List A∩B and A∪B. [2]","6. Sketch y=cos x for −180°≤x≤180°. [2]","7. Two dice thrown. P(sum=7)=? [2]","8. Find inverse of f(x)=4x−3. [2]","9. Rotation 90° CW about origin: new coords of (2,5). [2]","10. Area of triangle ABC: a=7,b=9,angle C=50°. [2]"]},
+    {y:"2014 Paper 2",qs:["1. Write 0.000605 in standard form. [1]","2. Solve simultaneous: 2x+3y=7, x−y=4. [3]","3. Volume of hemisphere r=6. Leave in π. [2]","4. Prove triangle with sides 5,12,13 is right-angled. [2]","5. Speed-time graph: trapezium. Find distance. [3]","6. If y is inversely proportional to x² and y=4 when x=3, find y when x=6. [3]","7. Solve 2tanx=3 for 0≤x≤180°. [2]","8. Factorise 3x³−12x. [2]","9. Construct perpendicular bisector of AB (6cm). [2]","10. Probability tree: bag A(3R,2B), bag B(1R,4B). P(same colour)=? [4]"]}
+  ];
+  p.innerHTML=`<div class="card"><h2>📄 PAST YEAR IGCSE PAPERS (2014–2023)</h2><p style="color:var(--dim);font-size:.85rem;">Click any paper to reveal questions.</p></div>`+
+  papers.map((pp,i)=>`<div class="paper-card" onclick="togglePaper(${i})"><h4>${pp.y}</h4><p>Click to reveal ${pp.qs.length} questions</p><div class="paper-qs" id="pq${i}">${pp.qs.map(q=>`<p class="pq">${q}</p>`).join('')}</div></div>`).join('');
+}
+function togglePaper(i){
+  const el=document.getElementById('pq'+i);
+  el.classList.toggle('show');
+}
+
+// ═══════════════════════════════════════
+// TERMINAL
+// ═══════════════════════════════════════
+const FS={'home':{},'home/docs':{'readme.txt':'LINUXXTRA Terminal. Type help.'},'home/maths':{'algebra.txt':'ax²+bx+c=0  →  x=(-b±√D)/2a','trig.txt':'SOH-CAH-TOA  sin²+cos²=1  Sine rule: a/sinA=b/sinB'}};
+let termCwd='home',termHistory=[],termHistIdx=-1;
+const CMDS={
+  help:()=>`Available commands:
+  ls           — list directory contents
+  cd <dir>     — change directory
+  cat <file>   — read a file
+  pwd          — print working directory
+  echo <text>  — print text
+  clear        — clear terminal
+  whoami       — who are you?
+  uname -a     — system info
+  nmap         — network scan (simulated)
+  ifconfig     — network interfaces
+  ping <host>  — ping host
+  netstat      — network stats
+  history      — command history
+  date         — current date
+  uptime       — system uptime
+  ps aux       — running processes
+  top          — process viewer
+  maths        — list maths topics
+  formula <t>  — show formula (e.g. formula trig)`,
+  ls:()=>{const d=FS[termCwd];return d?'  '+Object.keys(d).join('  \n  '):'(empty)';},
+  pwd:()=>'/'+termCwd,
+  whoami:()=>'root',
+  'uname -a':()=>'Linux kali-linuxxtra 6.1.0-kali9-amd64 #1 SMP PREEMPT Debian 6.1 x86_64 GNU/Linux',
+  date:()=>new Date().toString(),
+  uptime:()=>'up 3 days, 12:44, 1 user, load average: 0.08, 0.05, 0.01',
+  history:()=>termHistory.slice(-15).map((c,i)=>`${i+1}  ${c}`).join('\n'),
+  nmap:()=>`Starting Nmap 7.93 ( https://nmap.org )
+Scanning localhost (127.0.0.1)...
+PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+443/tcp  open  https
+8080/tcp open  http-proxy
+Nmap done: 1 IP address (1 host up) scanned in 2.34s`,
+  ifconfig:()=>`eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.1.42  netmask 255.255.255.0  broadcast 192.168.1.255
+lo:   flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0`,
+  netstat:()=>`Active Internet connections
+Proto  Local Address        Foreign Address      State
+tcp    0.0.0.0:22           0.0.0.0:*            LISTEN
+tcp    0.0.0.0:80           0.0.0.0:*            LISTEN`,
+  'ps aux':()=>`USER  PID %CPU %MEM COMMAND
+root    1  0.0  0.1 /sbin/init
+root  420  0.0  0.2 /usr/sbin/sshd
+root  512  0.1  0.4 nginx
+root  888  0.0  0.1 bash`,
+  top:()=>`top - ${new Date().toTimeString().slice(0,8)} up 3 days
+Tasks: 87 total, 1 running, 86 sleeping
+%Cpu(s): 0.8 us, 0.3 sy
+MiB Mem: 7982 total, 5120 free
+PID  USER  %CPU  %MEM  COMMAND
+512  root   0.1   0.4  nginx
+420  root   0.0   0.2  sshd`,
+  maths:()=>`Available maths topics:
+  formula algebra
+  formula trig
+  formula mensuration
+  formula stats
+  formula probability`,
+  clear:()=>null
+};
+
+function termKey(e){
+  if(e.key==='ArrowUp'){if(termHistIdx<termHistory.length-1){termHistIdx++;e.target.value=termHistory[termHistory.length-1-termHistIdx]||'';}}
+  if(e.key==='ArrowDown'){if(termHistIdx>0){termHistIdx--;e.target.value=termHistory[termHistory.length-1-termHistIdx]||'';}else{termHistIdx=-1;e.target.value='';}}
+  if(e.key!=='Enter')return;
+  const raw=e.target.value.trim();
+  if(!raw)return;
+  termHistory.push(raw);termHistIdx=-1;
+  e.target.value='';
+  termPrint(`root@kali:${termCwd==='home'?'~':'/'+termCwd}# ${raw}`);
+  const parts=raw.split(' ');
+  const cmd=parts[0];
+  const arg=parts.slice(1).join(' ');
+
+  if(raw==='clear'){document.getElementById('term-output').textContent='';return;}
+  if(cmd==='cd'){
+    const target=arg==='~'||arg===''?'home':(arg==='..'?'home':termCwd+'/'+arg);
+    if(FS[target]!==undefined||target==='home'){termCwd=target;termPrint('');}
+    else termPrint(`bash: cd: ${arg}: No such file or directory`);
+    return;
+  }
+  if(cmd==='cat'){
+    const d=FS[termCwd];
+    if(d&&d[arg])termPrint(d[arg]);
+    else termPrint(`cat: ${arg}: No such file or directory`);
+    return;
+  }
+  if(cmd==='echo'){termPrint(arg);return;}
+  if(cmd==='ping'){termPrint(`PING ${arg||'google.com'} 56 data bytes\n64 bytes from ${arg||'google.com'}: icmp_seq=1 ttl=117 time=12.3ms\n64 bytes from ${arg||'google.com'}: icmp_seq=2 ttl=117 time=11.9ms\n^C\n--- ${arg||'google.com'} ping statistics ---\n2 packets transmitted, 2 received, 0% packet loss`);return;}
+  if(cmd==='formula'){
+    const fmap={algebra:"ax²+bx+c=0  x=(-b±√(b²-4ac))/2a\n(a+b)²=a²+2ab+b²\n(a-b)(a+b)=a²-b²",trig:"sinθ=O/H  cosθ=A/H  tanθ=O/A\nsin²θ+cos²θ=1\nSine rule: a/sinA=b/sinB=c/sinC",mensuration:"Circle: A=πr², C=2πr\nCylinder: V=πr²h\nSphere: V=4/3πr³",stats:"Mean=Σfx/Σf  IQR=Q3-Q1\nFreq density=freq/class width",probability:"P(A)=favourable/total\nP(not A)=1-P(A)\nP(A and B)=P(A)×P(B) [independent]"};
+    termPrint(fmap[arg]||'Unknown topic. Try: algebra trig mensuration stats probability');
+    return;
+  }
+  const fn=CMDS[raw]||CMDS[cmd];
+  if(fn){const out=fn();if(out!==null)termPrint(out);}
+  else termPrint(`bash: ${cmd}: command not found`);
+}
+
+function termPrint(text){
+  const o=document.getElementById('term-output');
+  o.textContent+=text+'\n';
+  o.parentElement.scrollTop=o.parentElement.scrollHeight;
+}
+</script>
 </body>
 </html>
-
