@@ -1,305 +1,142 @@
-<script>
-/* ═══════════════════════════════════════════
-   LINUXXTRA AI V2 — CORE ENGINE
-   ═══════════════════════════════════════════ */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINUXXTRA AI V2</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        :root { --bg: #0a0a0c; --panel: #141417; --accent: #00f2ff; --text: #e0e0e6; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; height: 100vh; overflow: hidden; display: flex; }
+        #sidebar { width: 260px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; transition: 0.3s; }
+        #sidebar.collapsed { width: 0; overflow: hidden; border: none; }
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; }
+        #msgs { flex: 1; overflow-y: auto; display: none; flex-direction: column; padding: 20px; gap: 20px; }
+        .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; max-width: 800px; margin-top: 30px; }
+        .card { background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .card:hover { border-color: var(--accent); background: #1a1a1e; }
+        .input-area { padding: 20px; background: var(--bg); border-top: 1px solid #222; }
+        .input-box { max-width: 900px; margin: 0 auto; background: var(--panel); border-radius: 16px; padding: 12px; display: flex; align-items: flex-end; gap: 10px; border: 1px solid #333; }
+        textarea { flex: 1; background: transparent; border: none; color: white; resize: none; font-size: 16px; max-height: 200px; padding: 8px; outline: none; }
+        button { background: var(--accent); border: none; border-radius: 10px; width: 40px; height: 40px; cursor: pointer; color: black; font-weight: bold; }
+        .msg.user { align-self: flex-end; background: #222; padding: 12px 18px; border-radius: 18px 18px 2px 18px; max-width: 80%; }
+        .msg.ai { align-self: flex-start; display: flex; gap: 15px; width: 100%; }
+        .msg-av { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--accent); color: black; font-size: 12px; }
+        pre { background: #000 !important; border-radius: 8px; padding: 15px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div style="padding: 20px;">
+            <h3>LX CONFIG</h3>
+            <input type="password" id="api-key" placeholder="Gemini API Key" style="width:100%; background:#222; color:white; border:1px solid #444; padding:8px; border-radius:5px;">
+            <div id="key-status-text" style="font-size:10px; margin-top:5px; color:gray;">No Key Found</div>
+            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+            <div id="chat-history"></div>
+            <button onclick="newChat()" style="width:100%; margin-top:10px;">+ NEW CHAT</button>
+        </div>
+    </div>
+    <div class="main">
+        <div id="welcome" class="welcome">
+            <h1>LINUXXTRA <span style="color:var(--accent)">AI V2</span></h1>
+            <p>Mastering Linux, Coding & Cybersecurity</p>
+            <div class="grid">
+                <div class="card" onclick="injectPrompt('Write an elite Python script for automated network scanning using scapy.')">
+                    <h4>Elite Coding</h4>
+                    <p>Production-ready scripts</p>
+                </div>
+                <div class="card" onclick="injectPrompt('Explain how to set up a secure proot-distro Ubuntu in Termux.')">
+                    <h4>Linux Mastery</h4>
+                    <p>System admin & Kernels</p>
+                </div>
+            </div>
+        </div>
+        <div id="msgs"></div>
+        <div class="input-area">
+            <div class="input-box">
+                <textarea id="textarea" placeholder="Enter command..." rows="1"></textarea>
+                <button id="send-btn" onclick="send()">↑</button>
+            </div>
+        </div>
+    </div>
 
-// ── STATE ──
-const S = {
-  apiKey: 'AIzaSyATQcAPE1GHoDJTB3S9JUYRD_9uq6eoIlQ', // 00: REGENERATE THIS TOKEN LATER!
-  model: 'gemini-2.0-flash-exp',
-  temperature: 0.7,
-  maxTokens: 8192,
-  contextWindow: 15,
-  messages: [],        
-  chats: [],           
-  currentId: null,
-  busy: false,
-  tokenEst: 0,
-  sidebarOpen: window.innerWidth > 900
-};
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script>
+        const S = {
+            apiKey: localStorage.getItem('lx_key') || '',
+            model: 'gemini-2.0-flash-exp',
+            messages: [],
+            busy: false
+        };
 
-// ── SYSTEM PROMPT — MASTERY MODE ──
-const SYSTEM = `You are LINUXXTRA — an elite, frontier-grade AI with absolute mastery over:
-- All programming languages, Linux systems, Cybersecurity, and DevOps.
-CRITICAL RULES:
-1. ALL code must be complete and production-ready.
-2. Every code block must have inline comments.
-3. Zero syntax errors permitted.`;
+        const SYSTEM = "You are LINUXXTRA. Elite programmer and Cybersecurity expert. Provide complete, commented, bug-free code.";
 
-// ── INIT ──
-function init() {
-  loadLS();
-  bindTextarea();
-  renderHistory();
-  updateStats();
-  if (S.apiKey) {
-    document.getElementById('api-key').value = S.apiKey;
-    setKeyStatus(true, 'Key ready');
-  }
-}
+        if(S.apiKey) { document.getElementById('api-key').value = S.apiKey; document.getElementById('key-status-text').innerText = "Key Loaded"; }
 
-function loadLS() {
-  try {
-    const d = JSON.parse(localStorage.getItem('lx_v2') || '{}');
-    if (d.apiKey) { S.apiKey = d.apiKey; document.getElementById('api-key').value = d.apiKey; }
-    if (d.model) { S.model = d.model; document.getElementById('model-select').value = d.model; }
-    if (d.temp !== undefined) { S.temperature = d.temp; document.getElementById('temp').value = d.temp; document.getElementById('temp-val').textContent = d.temp; }
-    if (d.tokens) { S.maxTokens = d.tokens; document.getElementById('tokens').value = d.tokens; document.getElementById('tok-val').textContent = parseInt(d.tokens).toLocaleString(); }
-    if (d.ctx) { S.contextWindow = d.ctx; document.getElementById('ctx').value = d.ctx; document.getElementById('ctx-val').textContent = d.ctx + ' msgs'; }
-    if (d.chats) S.chats = d.chats;
-  } catch(e) {}
-}
+        document.getElementById('api-key').addEventListener('input', (e) => {
+            S.apiKey = e.target.value;
+            localStorage.setItem('lx_key', S.apiKey);
+            document.getElementById('key-status-text').innerText = "Key Updated";
+        });
 
-function saveLS() {
-  try {
-    localStorage.setItem('lx_v2', JSON.stringify({
-      apiKey: S.apiKey,
-      model: S.model,
-      temp: S.temperature,
-      tokens: S.maxTokens,
-      ctx: S.contextWindow,
-      chats: S.chats.slice(-40)
-    }));
-  } catch(e) {}
-}
+        function injectPrompt(txt) {
+            document.getElementById('textarea').value = txt;
+            send();
+        }
 
-// ── UI BINDINGS ──
-document.getElementById('api-key').addEventListener('input', function() {
-  S.apiKey = this.value.trim();
-  setKeyStatus(S.apiKey.length > 10, S.apiKey.length > 10 ? 'Key ready' : 'Key too short');
-  saveLS();
-});
+        async function send() {
+            const ta = document.getElementById('textarea');
+            const val = ta.value.trim();
+            if(!val || S.busy) return;
 
-document.getElementById('model-select').addEventListener('change', function() {
-  S.model = this.value;
-  document.getElementById('model-pill').textContent = this.options[this.selectedIndex].text.split(' ')[0] + ' ' + this.options[this.selectedIndex].text.split(' ')[1];
-  saveLS();
-});
+            if(!S.apiKey) return alert("Add API Key in sidebar first!");
 
-document.getElementById('temp').addEventListener('input', function() { S.temperature = parseFloat(this.value); saveLS(); });
-document.getElementById('tokens').addEventListener('input', function() { S.maxTokens = parseInt(this.value); saveLS(); });
-document.getElementById('ctx').addEventListener('input', function() { S.contextWindow = parseInt(this.value); saveLS(); });
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('msgs').style.display = 'flex';
+            
+            addMsg('user', val);
+            ta.value = '';
+            S.busy = true;
 
-function bindTextarea() {
-  const ta = document.getElementById('textarea');
-  ta.addEventListener('input', function() {
-    this.style.height = '24px';
-    this.style.height = Math.min(this.scrollHeight, 180) + 'px';
-    document.getElementById('char-counter').textContent = this.value.length + ' CHARS';
-  });
-  ta.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-  });
-}
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${S.model}:generateContent?key=${S.apiKey}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{role: 'user', parts: [{text: SYSTEM + "\n\nUser: " + val}]}]
+                    })
+                });
+                const data = await res.json();
+                const reply = data.candidates[0].content.parts[0].text;
+                addMsg('ai', reply);
+            } catch(e) {
+                addMsg('ai', "ERROR: Check API key or connection.");
+            }
+            S.busy = false;
+        }
 
-function setKeyStatus(ok, msg) {
-  const dot = document.getElementById('key-dot');
-  const txt = document.getElementById('key-status-text');
-  dot.className = 'key-dot ' + (ok ? 'ok' : 'bad');
-  txt.textContent = msg;
-}
+        function addMsg(role, text) {
+            const container = document.getElementById('msgs');
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            if(role === 'ai') {
+                div.innerHTML = `<div class="msg-av">LX</div><div class="msg-body">${formatText(text)}</div>`;
+            } else {
+                div.innerText = text;
+            }
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            Prism.highlightAll();
+        }
 
-function toggleKeyVis() {
-  const inp = document.getElementById('api-key');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-}
+        function formatText(t) {
+            return t.replace(/```(\w+)?\n([\s\S]+?)
+```/g, '<pre><code class="language-$1">$2</code></pre>').replace(/\n/g, '<br>');
+        }
 
-function toggleSidebar() {
-  const sb = document.getElementById('sidebar');
-  if (window.innerWidth <= 900) {
-    sb.classList.toggle('open');
-    sb.classList.remove('collapsed');
-  } else {
-    sb.classList.toggle('collapsed');
-  }
-}
-
-// ── SEND ──
-async function send() {
-  if (S.busy) return;
-  const ta = document.getElementById('textarea');
-  const text = ta.value.trim();
-  if (!text) return;
-
-  if (!S.apiKey || S.apiKey.length < 10) {
-    toast('Enter your API key in the sidebar first', 'err');
-    document.getElementById('sidebar').classList.add('open');
-    return;
-  }
-
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('msgs').style.display = 'flex';
-
-  addMsg('user', text);
-  S.messages.push({ role: 'user', content: text });
-  ta.value = '';
-  ta.style.height = '24px';
-  document.getElementById('char-counter').textContent = '0 CHARS';
-  updateStats();
-
-  await generate(text);
-}
-
-async function generate(userText) {
-  S.busy = true;
-  document.getElementById('send-btn').disabled = true;
-  pbar(true);
-
-  const typId = addTyping();
-
-  try {
-    const ctx = S.messages.slice(-S.contextWindow);
-    const apiMsgs = ctx.map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }]
-    }));
-
-    const body = {
-      system_instruction: { parts: [{ text: SYSTEM }] },
-      contents: apiMsgs,
-      generationConfig: {
-        temperature: S.temperature,
-        maxOutputTokens: S.maxTokens
-      }
-    };
-
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${S.model}:generateContent?key=${S.apiKey}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
-
-    if (!res.ok) throw new Error('API Error');
-
-    const data = await res.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    removeTyping(typId);
-    addMsg('ai', reply);
-    S.messages.push({ role: 'model', content: reply });
-
-    S.tokenEst += Math.ceil((userText.length + reply.length) / 4);
-
-    if (!S.currentId) S.currentId = Date.now().toString();
-    const title = userText.slice(0, 30);
-    const ex = S.chats.find(c => c.id === S.currentId);
-    if (ex) { ex.messages = [...S.messages]; }
-    else S.chats.unshift({ id: S.currentId, title: title, messages: [...S.messages], ts: Date.now() });
-    saveLS();
-    renderHistory();
-
-  } catch(err) {
-    removeTyping(typId);
-    addMsg('ai', `⚠ ERROR: ${err.message}`);
-  }
-
-  S.busy = false;
-  document.getElementById('send-btn').disabled = false;
-  pbar(false);
-  updateStats();
-}
-
-function addMsg(role, content) {
-  const el = document.createElement('div');
-  el.className = `msg ${role}`;
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  bubble.innerHTML = renderMd(content);
-  el.innerHTML = `<div class="msg-av ${role}">${role === 'ai' ? '⚡' : '🧑'}</div>`;
-  const body = document.createElement('div');
-  body.className = 'msg-body';
-  body.appendChild(bubble);
-  el.appendChild(body);
-  document.getElementById('msgs').appendChild(el);
-  el.querySelectorAll('pre code').forEach(b => Prism.highlightElement(b));
-  scrollBottom();
-}
-
-function addTyping() {
-  const id = 'ty_' + Date.now();
-  const el = document.createElement('div');
-  el.id = id;
-  el.className = 'msg ai';
-  el.innerHTML = `<div class="msg-av ai">⚡</div><div class="msg-body"><div class="typing"><div class="typing-d"></div><div class="typing-d"></div><div class="typing-d"></div></div></div>`;
-  document.getElementById('msgs').appendChild(el);
-  scrollBottom();
-  return id;
-}
-
-function removeTyping(id) { document.getElementById(id)?.remove(); }
-
-function renderMd(raw) {
-  let s = raw || '';
-  s = s.replace(/```(\w+)?\n?([\s\S]*?)
-```/g, (_, lang, code) => {
-    return `<div class="code-wrap"><div class="code-head"><span class="code-lang">${lang||'code'}</span></div><pre><code class="language-${lang}">${code.replace(/</g,'&lt;')}</code></pre></div>`;
-  });
-  return s.replace(/\n/g, '<br>');
-}
-
-function injectPrompt(text) {
-  const ta = document.getElementById('textarea');
-  ta.value = text;
-  ta.style.height = 'auto';
-  ta.style.height = ta.scrollHeight + 'px';
-  // 00 FIX: Auto-send after injecting
-  setTimeout(() => send(), 100);
-}
-
-function scrollBottom() {
-  const m = document.getElementById('msgs');
-  m.scrollTo({ top: m.scrollHeight, behavior: 'smooth' });
-}
-
-function pbar(on) { document.getElementById('pbar').classList.toggle('active', on); }
-
-function updateStats() {
-  document.getElementById('msg-count').textContent = S.messages.length;
-  document.getElementById('token-est').textContent = S.tokenEst;
-}
-
-function toast(msg, type='info') {
-  const el = document.createElement('div');
-  el.className = `toast-n ${type}`;
-  el.textContent = msg;
-  document.getElementById('toast').appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
-function renderHistory() {
-  const h = document.getElementById('chat-history');
-  h.innerHTML = '';
-  S.chats.forEach(c => {
-    const el = document.createElement('div');
-    el.className = 'hist-item' + (c.id === S.currentId ? ' active' : '');
-    el.textContent = '⚡ ' + c.title;
-    el.onclick = () => loadSession(c.id);
-    h.appendChild(el);
-  });
-}
-
-function loadSession(id) {
-  const sess = S.chats.find(c => c.id === id);
-  if (!sess) return;
-  S.currentId = id;
-  S.messages = [...sess.messages];
-  document.getElementById('msgs').innerHTML = '';
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('msgs').style.display = 'flex';
-  S.messages.forEach(m => addMsg(m.role === 'user' ? 'user' : 'ai', m.content));
-}
-
-function newChat() {
-  S.currentId = null;
-  S.messages = [];
-  document.getElementById('msgs').innerHTML = '';
-  document.getElementById('msgs').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
-}
-
-function clearAll() { localStorage.removeItem('lx_v2'); location.reload(); }
-
-init();
-</script>
+        function newChat() { location.reload(); }
+    </script>
 </body>
 </html>
 
