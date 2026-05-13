@@ -4,77 +4,52 @@ import { useState, useRef, useEffect } from "react";
 const GEMINI_KEY = "AIzaSyDqqLFZ4GyYNejqFykzKsi0B_9iljA7tiQ";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`;
 
-const SYSTEM_PROMPT = `You are LINUXXTRA, the most advanced AI assistant ever created. You are an absolute MASTER of coding — writing flawless, production-grade, fully commented code in ANY language (Python, JavaScript, TypeScript, Rust, Go, C++, Java, Kotlin, Swift, PHP, Ruby, SQL, Bash, and more).
+const SYSTEM_PROMPT = `You are LINUXXTRA, the most advanced AI assistant ever created. You are an absolute MASTER of coding — writing flawless, production-grade, fully commented code in ANY language.
 
-You excel at everything:
-- 🐧 Linux & Termux mastery — advanced commands, scripting, administration
-- 💻 Coding in ANY language — complete, working, optimized production code
-- 🌐 Full-stack web development — HTML, CSS, JS, React, Node, databases
-- 🔐 Cybersecurity & ethical hacking concepts and education
-- 🤖 AI, Machine Learning, Data Science with working code
-- 📱 Mobile app development — Android, iOS, React Native
-- 🚀 Business strategy, entrepreneurship, online income
-- 🎨 UI/UX design with complete implementation
-- 🧠 Science, mathematics, philosophy, general knowledge
-- ❤️ Life advice, career guidance, personal development
+You excel at:
+- 🐧 Linux & Termux mastery
+- 💻 Flawless coding in ANY language
+- 🌐 Full-stack development
+- 🔐 Ethical hacking & cybersecurity
+- 🚀 Entrepreneurship & digital products
 
-When writing code ALWAYS:
-- Write COMPLETE, fully working, production-ready code
-- Add detailed comments explaining every section
-- Follow best practices and modern design patterns
-- Handle errors and edge cases properly
-- Optimize for performance and readability
-- Offer multiple approaches when helpful
-
-Be warm, encouraging, incredibly detailed and supportive. Make every person feel capable and valued.`;
+Always be detailed, helpful, and write complete, working code.`;
 
 const THEMES = {
   aurora:  { name:"Aurora",  p:"#00ffcc", s:"#7b2fff", a:"#00eeff", bg:"#04060f", card:"#080b18", g:"0,255,204" },
-  solar:   { name:"Solar",   p:"#ffaa00", s:"#ff4400", a:"#ffe066", bg:"#0f0800", card:"#150c00", g:"255,170,0" },
-  neon:    { name:"Neon",    p:"#ff00aa", s:"#aa00ff", a:"#ff88dd", bg:"#0d0010", card:"#130015", g:"255,0,170" },
-  arctic:  { name:"Arctic",  p:"#00ccff", s:"#0044ff", a:"#88ddff", bg:"#000d14", card:"#001018", g:"0,204,255" },
   matrix:  { name:"Matrix",  p:"#00ff41", s:"#00aa22", a:"#88ffaa", bg:"#000800", card:"#000d00", g:"0,255,65" },
   crimson: { name:"Crimson", p:"#ff3355", s:"#cc0022", a:"#ff8899", bg:"#0f0005", card:"#150008", g:"255,51,85" },
+  neon:    { name:"Neon",    p:"#ff00aa", s:"#aa00ff", a:"#ff88dd", bg:"#0d0010", card:"#130015", g:"255,0,170" },
 };
 
 const QUICK = [
-  {i:"🐧",l:"Linux Master",  m:"Teach me advanced Linux commands and system administration"},
-  {i:"💻",l:"Write Code",    m:"Write me complete production-ready code for a project"},
-  {i:"🌐",l:"Full Website",  m:"Build a complete professional website with HTML CSS and JavaScript"},
-  {i:"🔐",l:"Cybersecurity", m:"Explain ethical hacking and cybersecurity concepts with examples"},
-  {i:"🤖",l:"AI & ML",       m:"Explain machine learning with complete working Python code"},
-  {i:"📱",l:"Android Dev",   m:"Help me build an Android app from scratch"},
-  {i:"🚀",l:"Make Money",    m:"Teach me real ways to make money online using tech skills"},
-  {i:"🎨",l:"UI Design",     m:"Design a beautiful modern UI with complete working code"},
-  {i:"🔧",l:"Debug Code",    m:"Help me debug and fix broken code"},
-  {i:"📊",l:"Data Science",  m:"Write complete data science and machine learning Python code"},
-  {i:"🎯",l:"Life Advice",   m:"Give me powerful actionable advice to improve my life and career"},
-  {i:"🏢",l:"Business",      m:"Help me plan and launch a profitable online business"},
+  {i:"🐧",l:"Linux Master",  m:"Teach me advanced Linux commands"},
+  {i:"💻",l:"Write Code",    m:"Write me a complete production-ready Python project"},
+  {i:"🔐",l:"Cybersecurity", m:"Explain ethical hacking with examples"},
+  {i:"🚀",l:"Business",      m:"How can I scale my Gumroad storefront?"},
 ];
 
-const LANGS = ["English","Arabic","Urdu","Hindi","French","Spanish","German","Chinese"];
+const LANGS = ["English","Arabic","Urdu","French","German"];
 
 export default function LinuxxtraAI() {
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: `# Welcome to LINUXXTRA AI! 🧠✨\n\nI am your **ultra-advanced AI** — 100% free, powered by Google Gemini.\n\n**I master everything:**\n- 💻 Coding in ANY language — complete working code\n- 🐧 Linux & Termux expert\n- 🔐 Cybersecurity & ethical hacking\n- 🌐 Full-stack web development\n- 🎨 UI/UX design with full code\n- 🚀 Business & entrepreneurship\n- ❤️ Life advice & career guidance\n\n**Unlimited chat. No limits. What shall we build today?**`,
+    content: `# Welcome to LINUXXTRA 🧠\n\nI am your **ultra-advanced engine**. Mastering Linux, Coding, and Cybersec.\n\n**What are we building today?**`,
     time: new Date().toLocaleTimeString()
   }]);
-  const [input, setInput]       = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [theme, setTheme]       = useState("aurora");
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState("aurora");
   const [showSidebar, setShowSidebar] = useState(false);
-  const [showThemes, setShowThemes]   = useState(false);
   const [showActions, setShowActions] = useState(true);
-  const [lang, setLang]         = useState("English");
+  const [lang, setLang] = useState("English");
   const [msgCount, setMsgCount] = useState(0);
-  const [copied, setCopied]     = useState(null);
-  const [notif, setNotif]       = useState(null);
+  const [notif, setNotif] = useState(null);
   const [liveTime, setLiveTime] = useState(new Date().toLocaleTimeString());
-  const [battery, setBattery]   = useState(null);
+  const [battery, setBattery] = useState(null);
   const [charging, setCharging] = useState(false);
   const bottomRef = useRef(null);
-  const inputRef  = useRef(null);
+  const inputRef = useRef(null);
   const t = THEMES[theme];
 
   useEffect(() => {
@@ -87,8 +62,8 @@ export default function LinuxxtraAI() {
       navigator.getBattery().then(bat => {
         setBattery(Math.round(bat.level * 100));
         setCharging(bat.charging);
-        bat.addEventListener("levelchange",   () => setBattery(Math.round(bat.level * 100)));
-        bat.addEventListener("chargingchange",() => setCharging(bat.charging));
+        bat.addEventListener("levelchange", () => setBattery(Math.round(bat.level * 100)));
+        bat.addEventListener("chargingchange", () => setCharging(bat.charging));
       });
     }
   }, []);
@@ -97,16 +72,9 @@ export default function LinuxxtraAI() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const notify = (msg, col) => {
-    setNotif({ msg, col: col || t.p });
-    setTimeout(() => setNotif(null), 2800);
-  };
-
-  const batteryColor = () => {
-    if (charging)    return "#00ffcc";
-    if (battery > 50) return "#00ff88";
-    if (battery > 20) return "#ffcc00";
-    return "#ff3355";
+  const notify = (msg) => {
+    setNotif(msg);
+    setTimeout(() => setNotif(null), 2500);
   };
 
   const sendMessage = async (text) => {
@@ -117,11 +85,11 @@ export default function LinuxxtraAI() {
     const userMsg = { role: "user", content: userText, time: new Date().toLocaleTimeString() };
     const updated = [...messages, userMsg];
     setMessages(updated);
-    setMsgCount(c => c + 1);
+    setMsgCount(prev => prev + 1);
 
     try {
       const history = updated.map(m => ({
-        role:  m.role === "assistant" ? "model" : "user",
+        role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }]
       }));
 
@@ -129,292 +97,89 @@ export default function LinuxxtraAI() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: `${SYSTEM_PROMPT}\n\nAlways respond in ${lang} unless the user writes in another language, then match theirs.` }]
-          },
+          system_instruction: { parts: [{ text: `${SYSTEM_PROMPT}\nResponse Language: ${lang}` }] },
           contents: history,
-          generationConfig: { temperature: 0.85, topK: 40, topP: 0.95, maxOutputTokens: 8192 }
         })
       });
 
       const data = await res.json();
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!reply) throw new Error(data.error?.message || "No response from Gemini");
-      setMessages(prev => [...prev, { role: "assistant", content: reply, time: new Date().toLocaleTimeString() }]);
+      setMessages(prev => [...prev, { role: "assistant", content: reply || "Engine error.", time: new Date().toLocaleTimeString() }]);
     } catch (e) {
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: `⚠️ **Error:** ${e.message}\n\nPlease check your API key is valid and try again!`,
-        time: new Date().toLocaleTimeString()
-      }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "Connection Lost.", time: new Date().toLocaleTimeString() }]);
     }
     setLoading(false);
-  };
-
-  const copyMsg = (text, idx) => {
-    navigator.clipboard?.writeText(text).then(() => {
-      setCopied(idx); notify("✅ Copied!");
-      setTimeout(() => setCopied(null), 2000);
-    });
-  };
-
-  const saveChat = () => {
-    const txt = messages.map(m => `${m.role === "user" ? "You" : "LINUXXTRA"} [${m.time}]:\n${m.content}`).join("\n\n---\n\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([txt], { type: "text/plain" }));
-    a.download = `linuxxtra-${Date.now()}.txt`;
-    a.click();
-    notify("💾 Chat saved!");
-  };
-
-  const clearChat = () => {
-    setMessages([{ role: "assistant", content: "Fresh start! 🧠 What shall we build?", time: new Date().toLocaleTimeString() }]);
-    setMsgCount(0); setShowActions(true); notify("🗑 Cleared");
   };
 
   const fmt = (text) => {
     if (!text) return "";
     return text
-      .replace(/```(\w*)\n?([\s\S]*?)
-```/g,
-        `<div style="margin:10px 0;border-radius:12px;overflow:hidden">
-          <div style="background:#000;padding:6px 14px;font-size:10px;color:${t.p};font-family:'Share Tech Mono',monospace;letter-spacing:2px;border-bottom:1px solid ${t.p}33;display:flex;justify-content:space-between">
-            <span>$1 CODE</span><span style="opacity:0.3">LINUXXTRA</span>
-          </div>
-          <pre style="background:#050505;padding:14px;margin:0;overflow-x:auto;font-family:'Share Tech Mono','Courier New',monospace;font-size:13px;line-height:1.7;color:#e0e0e0;border:1px solid ${t.p}22;border-top:none;border-radius:0 0 12px 12px"><code>$2</code></pre>
-        </div>`)
-      .replace(/^# (.+)/gm,   `<div style="font-size:20px;font-weight:900;color:${t.p};margin:12px 0 6px;font-family:'Orbitron',sans-serif;text-shadow:0 0 15px ${t.p}66">$1</div>`)
-      .replace(/^## (.+)/gm,  `<div style="font-size:16px;font-weight:bold;color:${t.a};margin:10px 0 4px;font-family:'Orbitron',sans-serif">$1</div>`)
-      .replace(/^### (.+)/gm, `<div style="font-size:14px;font-weight:bold;color:${t.p}cc;margin:8px 0 3px">$1</div>`)
+      .replace(/```(\w*)\n?([\s\S]*?)```/g, `<div style="background:#050505;padding:12px;border:1px solid ${t.p}44;border-radius:8px;font-family:'Share Tech Mono';margin:10px 0;overflow-x:auto;"><code>$2</code></div>`)
       .replace(/\*\*(.*?)\*\*/g, `<strong style="color:${t.a}">$1</strong>`)
-      .replace(/\*(.*?)\*/g,     `<em style="color:${t.p}bb">$1</em>`)
-      .replace(/`([^`\n]+)`/g,   `<code style="background:rgba(0,0,0,0.5);padding:2px 8px;border-radius:5px;font-family:'Share Tech Mono',monospace;font-size:12px;color:${t.p};border:1px solid ${t.p}44">$1</code>`)
-      .replace(/^- (.+)/gm,  `<div style="display:flex;gap:8px;margin:3px 0;align-items:flex-start"><span style="color:${t.p};margin-top:3px;flex-shrink:0">▸</span><span>$1</span></div>`)
-      .replace(/^\d+\. (.+)/gm, `<div style="display:flex;gap:8px;margin:3px 0"><span style="color:${t.s};font-weight:bold;flex-shrink:0">●</span><span>$1</span></div>`)
       .replace(/\n/g, "<br/>");
   };
 
   return (
-    <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:t.bg, fontFamily:"'Rajdhani',sans-serif", color:"white", overflow:"hidden", position:"relative" }}>
+    <div style={{ height:"100dvh", display:"flex", flexDirection:"column", background:t.bg, color:"white", overflow:"hidden", position:"relative", fontFamily:"'Rajdhani', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
-        @keyframes popIn   { from{opacity:0;transform:translateY(14px) scale(0.93)} to{opacity:1;transform:translateY(0) scale(1)} }
-        @keyframes bounce  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.65)} }
-        @keyframes slideDown { from{opacity:0;transform:translateX(-50%) translateY(-14px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
-        @keyframes glowPulse { 0%,100%{box-shadow:0 0 8px rgba(${t.g},0.3)} 50%{box-shadow:0 0 22px rgba(${t.g},0.7),0 0 40px rgba(${t.g},0.2)} }
-        ::-webkit-scrollbar { width:3px; height:3px }
-        ::-webkit-scrollbar-thumb { background:rgba(${t.g},0.3); border-radius:2px }
-        textarea::-webkit-scrollbar { display:none }
-        pre::-webkit-scrollbar { height:4px }
-        pre::-webkit-scrollbar-thumb { background:rgba(${t.g},0.4); border-radius:2px }
-        .qbtn:hover { background:rgba(${t.g},0.2)!important; transform:translateY(-2px); box-shadow:0 4px 15px rgba(${t.g},0.25)!important }
-        .cpybtn { opacity:0; transition:opacity 0.2s }
-        .msgwrap:hover .cpybtn { opacity:1 }
+        @keyframes glow { 0%,100%{box-shadow:0 0 5px ${t.p}44} 50%{box-shadow:0 0 20px ${t.p}aa} }
+        .btn-glow { animation: glow 2s infinite; }
       `}</style>
 
-      
-      <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", backgroundImage:`linear-gradient(rgba(${t.g},0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(${t.g},0.04) 1px,transparent 1px)`, backgroundSize:"55px 55px" }}/>
-      <div style={{ position:"fixed", inset:0, zIndex:0, pointerEvents:"none", background:`radial-gradient(ellipse at 10% 10%,rgba(${t.g},0.1) 0%,transparent 55%),radial-gradient(ellipse at 90% 90%,rgba(${t.g},0.07) 0%,transparent 55%)` }}/>
-
-      
-      {notif && (
-        <div style={{ position:"fixed", top:78, left:"50%", transform:"translateX(-50%)", background:t.card, border:`1px solid ${notif.col}`, color:notif.col, padding:"10px 26px", borderRadius:30, fontSize:13, zIndex:1000, boxShadow:`0 4px 25px rgba(${t.g},0.4)`, animation:"slideDown 0.3s ease", whiteSpace:"nowrap", fontWeight:600 }}>
-          {notif.msg}
+      {/* Header Bar */}
+      <div style={{ padding:"12px", background:t.card, borderBottom:`1px solid ${t.p}33`, display:"flex", justifyContent:"space-between", alignItems:"center", zIndex:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          <button onClick={() => setShowSidebar(true)} style={{ background:"none", border:"none", color:t.p, fontSize:"20px", cursor:"pointer" }}>☰</button>
+          <span style={{ fontWeight:"900", color:t.p, letterSpacing:"2px" }}>LINUXXTRA</span>
         </div>
-      )}
-
-      
-      {showSidebar && (
-        <div style={{ position:"fixed", inset:0, zIndex:200, background:"rgba(0,0,0,0.85)", backdropFilter:"blur(8px)" }} onClick={()=>setShowSidebar(false)}>
-          <div style={{ width:295, height:"100%", background:t.card, borderRight:`2px solid ${t.p}33`, padding:20, display:"flex", flexDirection:"column", gap:16, overflowY:"auto" }} onClick={e=>e.stopPropagation()}>
-
-            <div style={{ display:"flex", alignItems:"center", gap:12, paddingBottom:14, borderBottom:`1px solid ${t.p}22` }}>
-              <div style={{ width:44, height:44, borderRadius:"50%", background:`linear-gradient(135deg,${t.p},${t.s})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, animation:"glowPulse 2s infinite" }}>🧠</div>
-              <div>
-                <div style={{ fontWeight:900, color:t.p, fontSize:16, letterSpacing:2, fontFamily:"'Orbitron',sans-serif" }}>LINUXXTRA</div>
-                <div style={{ fontSize:11, color:"#444" }}>Ultra Advanced AI • 100% Free</div>
-              </div>
-            </div>
-
-            <div style={{ background:"rgba(0,0,0,0.4)", borderRadius:12, padding:"12px 14px", border:`1px solid ${t.p}22` }}>
-              <div style={{ fontSize:10, color:"#444", letterSpacing:2, marginBottom:10 }}>LIVE STATUS</div>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                <span style={{ fontSize:12, color:"#555" }}>🕐 Time</span>
-                <span style={{ fontSize:15, fontWeight:700, color:t.p, fontFamily:"'Orbitron',sans-serif" }}>{liveTime}</span>
-              </div>
-              {battery !== null && (
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                  <span style={{ fontSize:12, color:"#555" }}>🔋 Battery</span>
-                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <div style={{ width:55, height:8, background:"rgba(255,255,255,0.08)", borderRadius:4, overflow:"hidden" }}>
-                      <div style={{ width:`${battery}%`, height:"100%", background:batteryColor(), borderRadius:4, boxShadow:`0 0 6px ${batteryColor()}` }}/>
-                    </div>
-                    <span style={{ fontSize:13, fontWeight:700, color:batteryColor() }}>{charging?"⚡":""}{battery}%</span>
-                  </div>
-                </div>
-              )}
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
-                <span style={{ fontSize:12, color:"#555" }}>💬 Messages</span>
-                <span style={{ fontSize:15, fontWeight:700, color:t.p, fontFamily:"'Orbitron',sans-serif" }}>{msgCount}</span>
-              </div>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <span style={{ fontSize:12, color:"#555" }}>∞ Limit</span>
-                <span style={{ fontSize:13, fontWeight:700, color:"#00ff88" }}>UNLIMITED</span>
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontSize:10, color:"#444", letterSpacing:2, marginBottom:10 }}>🌍 LANGUAGE</div>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                {LANGS.map(l => (
-                  <button key={l} onClick={()=>{ setLang(l); notify(`🌍 ${l}`); }} style={{ background:lang===l?`${t.p}22`:"rgba(255,255,255,0.03)", border:`1px solid ${lang===l?t.p:"rgba(255,255,255,0.07)"}`, color:lang===l?t.p:"#555", padding:"5px 11px", borderRadius:12, cursor:"pointer", fontSize:12, fontFamily:"inherit" }}>
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontSize:10, color:"#444", letterSpacing:2, marginBottom:10 }}>🎨 THEME</div>
-              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {Object.entries(THEMES).map(([k,v]) => (
-                  <button key={k} onClick={()=>{ setTheme(k); notify(`🎨 ${v.name}`); }} title={v.name} style={{ width:34, height:34, borderRadius:"50%", background:`linear-gradient(135deg,${v.p},${v.s})`, border:theme===k?"2px solid white":"2px solid transparent", cursor:"pointer", boxShadow:theme===k?`0 0 12px ${v.p}`:"none", transition:"all 0.2s" }}/>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:"auto" }}>
-              <button onClick={saveChat} style={{ background:`${t.p}15`, border:`1px solid ${t.p}44`, color:t.p, padding:"11px", borderRadius:12, cursor:"pointer", fontSize:14, fontFamily:"inherit", fontWeight:600, letterSpacing:1 }}>💾 SAVE CHAT</button>
-              <button onClick={clearChat} style={{ background:"rgba(255,50,50,0.07)", border:"1px solid rgba(255,50,50,0.22)", color:"#ff5555", padding:"11px", borderRadius:12, cursor:"pointer", fontSize:14, fontFamily:"inherit" }}>🗑 CLEAR CHAT</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      
-      <div style={{ background:`${t.card}f5`, borderBottom:`1px solid rgba(${t.g},0.22)`, padding:"10px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0, zIndex:10, backdropFilter:"blur(20px)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <button onClick={()=>setShowSidebar(true)} style={{ background:"none", border:"none", color:t.p, cursor:"pointer", fontSize:22, padding:"2px 6px", lineHeight:1 }}>☰</button>
-          <div style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,${t.p},${t.s})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17, boxShadow:`0 0 14px rgba(${t.g},0.5)`, animation:"glowPulse 3s infinite" }}>🧠</div>
-          <div>
-            <div style={{ fontSize:16, fontWeight:900, color:t.p, letterSpacing:3, fontFamily:"'Orbitron',sans-serif", textShadow:`0 0 12px rgba(${t.g},0.5)` }}>LINUXXTRA</div>
-            <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:loading?"#ffcc00":t.p, animation:loading?"pulse 0.7s infinite":"glowPulse 2s infinite" }}/>
-              <span style={{ fontSize:10, color:"#555", letterSpacing:1 }}>{loading?"THINKING...":"ONLINE • FREE • UNLIMITED"}</span>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          {battery !== null && (
-            <div style={{ display:"flex", alignItems:"center", gap:5, background:"rgba(0,0,0,0.35)", borderRadius:10, padding:"4px 9px", border:`1px solid rgba(${t.g},0.15)` }}>
-              <div style={{ width:24, height:11, borderRadius:3, border:`1.5px solid ${batteryColor()}`, position:"relative", padding:"1px", display:"flex", alignItems:"center" }}>
-                <div style={{ width:`${battery}%`, height:"100%", background:batteryColor(), borderRadius:2, transition:"width 0.5s" }}/>
-                <div style={{ width:3, height:5, background:batteryColor(), borderRadius:"0 2px 2px 0", position:"absolute", right:-4 }}/>
-              </div>
-              <span style={{ fontSize:11, fontWeight:700, color:batteryColor(), fontFamily:"'Orbitron',sans-serif" }}>{charging?"⚡":""}{battery}%</span>
-            </div>
-          )}
-
-          <div style={{ background:"rgba(0,0,0,0.35)", borderRadius:10, padding:"4px 10px", border:`1px solid rgba(${t.g},0.15)` }}>
-            <span style={{ fontSize:12, fontWeight:700, color:t.p, fontFamily:"'Orbitron',sans-serif" }}>{liveTime}</span>
-          </div>
-
-          <div style={{ background:"rgba(0,0,0,0.35)", borderRadius:10, padding:"4px 10px", border:`1px solid rgba(${t.g},0.15)`, textAlign:"center" }}>
-            <div style={{ fontSize:13, fontWeight:700, color:t.p, fontFamily:"'Orbitron',sans-serif" }}>{msgCount}</div>
-            <div style={{ fontSize:8, color:"#333", letterSpacing:1 }}>MSGS</div>
-          </div>
-
-          <div style={{ position:"relative" }}>
-            <button onClick={()=>setShowThemes(!showThemes)} style={{ background:`linear-gradient(135deg,${t.p},${t.s})`, border:"none", borderRadius:14, padding:"5px 10px", cursor:"pointer", fontSize:11, color:"#000", fontWeight:800 }}>🎨</button>
-            {showThemes && (
-              <div style={{ position:"absolute", right:0, top:"110%", background:t.card, border:`1px solid ${t.p}33`, borderRadius:14, padding:12, display:"flex", gap:8, zIndex:100, boxShadow:`0 10px 40px rgba(0,0,0,0.8)` }}>
-                {Object.entries(THEMES).map(([k,v]) => (
-                  <button key={k} onClick={()=>{ setTheme(k); setShowThemes(false); }} title={v.name} style={{ width:28, height:28, borderRadius:"50%", background:`linear-gradient(135deg,${v.p},${v.s})`, border:theme===k?"2px solid white":"2px solid transparent", cursor:"pointer", boxShadow:theme===k?`0 0 10px ${v.p}`:"none" }}/>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <div style={{ fontSize:"12px", color:t.p }}>{liveTime} | {battery}% {charging ? "⚡" : ""}</div>
       </div>
 
-      
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 14px", display:"flex", flexDirection:"column", gap:14, zIndex:5 }}>
-        {messages.map((msg, i) => (
-          <div key={i} className="msgwrap" style={{ display:"flex", justifyContent:msg.role==="user"?"flex-end":"flex-start", alignItems:"flex-end", gap:8, animation:"popIn 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}>
-            {msg.role==="assistant" && (
-              <div style={{ width:34, height:34, borderRadius:"50%", background:`linear-gradient(135deg,${t.p},${t.s})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0, boxShadow:`0 0 12px rgba(${t.g},0.4)` }}>🧠</div>
-            )}
-            <div style={{ maxWidth:"82%", display:"flex", flexDirection:"column", gap:4, alignItems:msg.role==="user"?"flex-end":"flex-start" }}>
-              <div style={{ padding:"12px 16px", borderRadius:msg.role==="user"?"18px 18px 4px 18px":"4px 18px 18px 18px", background:msg.role==="user"?`linear-gradient(135deg,${t.p},${t.s})`:"rgba(255,255,255,0.04)", color:msg.role==="user"?"#000":"#e0e0e0", fontSize:14, lineHeight:1.8, border:msg.role==="assistant"?`1px solid rgba(${t.g},0.14)`:"none", boxShadow:msg.role==="user"?`0 4px 20px rgba(${t.g},0.4)`:`0 2px 10px rgba(0,0,0,0.4)`, fontWeight:msg.role==="user"?"600":"400" }}
-                dangerouslySetInnerHTML={{ __html: fmt(msg.content) }}
-              />
-              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                <span style={{ fontSize:10, color:"#222" }}>{msg.time}</span>
-                {msg.role==="assistant" && (
-                  <button className="cpybtn" onClick={()=>copyMsg(msg.content,i)} style={{ background:"none", border:"none", color:copied===i?t.p:"#333", cursor:"pointer", fontSize:11, padding:0 }}>
-                    {copied===i?"✅ Copied":"📋 Copy"}
-                  </button>
-                )}
-              </div>
-            </div>
-            {msg.role==="user" && (
-              <div style={{ width:34, height:34, borderRadius:"50%", background:`rgba(${t.g},0.14)`, border:`1px solid rgba(${t.g},0.3)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0 }}>😊</div>
-            )}
+      {/* Main Chat Area */}
+      <div style={{ flex:1, overflowY:"auto", padding:"20px", display:"flex", flexDirection:"column", gap:"15px" }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth:"85%" }}>
+            <div style={{ background: m.role === "user" ? t.p : "rgba(255,255,255,0.05)", color: m.role === "user" ? "#000" : "#fff", padding:"12px", borderRadius:"12px", fontSize:"14px", border: m.role === "assistant" ? `1px solid ${t.p}22` : "none" }} dangerouslySetInnerHTML={{ __html: fmt(m.content) }} />
+            <div style={{ fontSize:"10px", opacity:0.4, marginTop:"4px" }}>{m.time}</div>
           </div>
         ))}
-
-        {loading && (
-          <div style={{ display:"flex", alignItems:"flex-end", gap:8, animation:"popIn 0.3s ease" }}>
-            <div style={{ width:34, height:34, borderRadius:"50%", background:`linear-gradient(135deg,${t.p},${t.s})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15 }}>🧠</div>
-            <div style={{ background:"rgba(255,255,255,0.04)", border:`1px solid rgba(${t.g},0.14)`, padding:"14px 20px", borderRadius:"4px 18px 18px 18px", display:"flex", gap:6, alignItems:"center" }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ width:9, height:9, borderRadius:"50%", background:t.p, boxShadow:`0 0 8px ${t.p}`, animation:`bounce 1.2s ease-in-out ${i*0.2}s infinite` }}/>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {showActions && !loading && (
-          <div style={{ marginTop:8 }}>
-            <div style={{ textAlign:"center", fontSize:10, color:"#222", marginBottom:12, letterSpacing:2 }}>✦ QUICK START — TAP ANYTHING ✦</div>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center" }}>
-              {QUICK.map((a, i) => (
-                <button key={i} className="qbtn" onClick={()=>sendMessage(a.m)} style={{ background:`rgba(${t.g},0.07)`, border:`1px solid rgba(${t.g},0.2)`, color:t.p, padding:"9px 14px", borderRadius:22, cursor:"pointer", fontSize:12, fontFamily:"inherit", display:"flex", alignItems:"center", gap:5, transition:"all 0.2s" }}>
-                  {a.i} {a.l}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        <div ref={bottomRef}/>
+        {loading && <div style={{ color:t.p }}>Engines Running...</div>}
+        <div ref={bottomRef} />
       </div>
 
-      
-      <div style={{ background:`${t.card}f5`, borderTop:`1px solid rgba(${t.g},0.18)`, padding:"12px 14px", flexShrink:0, zIndex:10, backdropFilter:"blur(20px)" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8, fontSize:10, color:"#222" }}>
-          <span style={{ color:"#333" }}>💬 {msgCount} messages sent</span>
-          <span style={{ color:t.p, fontFamily:"'Orbitron',sans-serif", fontSize:9 }}>∞ NO LIMITS</span>
-          <span style={{ color:"#333" }}>🕐 {liveTime}</span>
-        </div>
+      {/* Notification Toast */}
+      {notif && <div style={{ position:"fixed", top:"70px", left:"50%", transform:"translateX(-50%)", background:t.p, color:"#000", padding:"5px 15px", borderRadius:"20px", fontSize:"12px", zIndex:100 }}>{notif}</div>}
 
-        <div style={{ display:"flex", gap:8, alignItems:"flex-end" }}>
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-            placeholder="Ask LINUXXTRA anything — coding, Linux, business, life... 🧠"
-            rows={1}
-            style={{ flex:1, background:"rgba(255,255,255,0.04)", border:`1px solid rgba(${t.g},0.22)`, borderRadius:22, padding:"12px 18px", color:"white", fontSize:14, outline:"none", fontFamily:"inherit", resize:"none", lineHeight:1.6, maxHeight:130, overflow:"auto", transition:"all 0.25s" }}
-            onInput={e => { e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,130)+"px"; }}
+      {/* Input Area */}
+      <div style={{ padding:"15px", background:t.card, borderTop:`1px solid ${t.p}33` }}>
+        <div style={{ display:"flex", gap:"10px" }}>
+          <textarea 
+            value={input} 
+            onChange={(e) => setInput(e.target.value)} 
+            placeholder="Initialize command..." 
+            style={{ flex:1, background:"rgba(0,0,0,0.3)", border:`1px solid ${t.p}44`, borderRadius:"15px", padding:"10px", color:"#fff", resize:"none", outline:"none" }}
           />
-          <button onClick={()=>sendMessage()} disabled={loading||!input.trim()} style={{ width:50, height:50, borderRadius:"50%", flexShrink:0, background:!loading&&input.trim()?`linear-gradient(135deg,${t.p},${t.s})`:`rgba(${t.g},0.1)`, border:"none", cursor:!loading&&input.trim()?"pointer":"not-allowed", fontSize:20, display:"flex", alignItems:"center", justifyContent:"center", boxShadow:!loading&&input.trim()?`0 0 22px rgba(${t.g},0.55)`:"none", transition:"all 0.2s" }}>
-            {loading ? "⏳" : "➤"}
-          </button>
+          <button onClick={() => sendMessage()} style={{ width:"50px", height:"50px", borderRadius:"50%", background:t.p, border:"none", cursor:"pointer", fontWeight:"bold" }} className="btn-glow">➤</button>
         </div>
       </div>
+
+      {/* Sidebar Overlay */}
+      {showSidebar && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", zIndex:100 }} onClick={() => setShowSidebar(false)}>
+          <div style={{ width:"280px", height:"100%", background:t.card, padding:"20px", borderRight:`1px solid ${t.p}33` }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ color:t.p }}>SETTINGS</h2>
+            <div style={{ marginTop:"20px" }}>
+              <p style={{ fontSize:"12px", opacity:0.5 }}>THEME</p>
+              <div style={{ display:"flex", gap:"10px", marginTop:"10px" }}>
+                {Object.keys(THEMES).map(k => (
+                  <div key={k} onClick={() => setTheme(k)} style={{ width:"30px", height:"30px", background:THEMES[k].p, borderRadius:"50%", cursor:"pointer", border: theme === k ? "2px solid white" : "none" }} />
+                ))}
+              </div>
+            </div>
+            <button onClick={() => { setMessages([]); setShowSidebar(false); notify("Memory Purged"); }} style={{ marginTop:"30px", width:"100%", padding:"10px", background:"#ff3355", border:"none", color:"white", borderRadius:"8px", cursor:"pointer" }}>CLEAR TERMINAL</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
